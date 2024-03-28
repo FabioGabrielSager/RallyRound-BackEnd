@@ -30,7 +30,6 @@ public class MPAuthTokenEntity {
     private String accessToken;
     @Column(name = "token_type", nullable = false)
     private String tokenType;
-    // TODO: CHECK IF INT IS A CORRECT DATA TYPE FOR THIS FIELD
     @Column(name = "expire_in", nullable = false)
     private int expireIn;
     @Column(name = "user_code", nullable = false)

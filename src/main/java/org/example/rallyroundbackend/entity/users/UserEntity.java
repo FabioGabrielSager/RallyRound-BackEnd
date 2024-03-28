@@ -1,12 +1,20 @@
 package org.example.rallyroundbackend.entity.users;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.example.rallyroundbackend.entity.location.PlaceEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -15,7 +23,10 @@ import java.util.UUID;
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 @Getter @Setter
-public class UserEntity {
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -25,10 +36,10 @@ public class UserEntity {
     protected String email;
     protected LocalDate birthdate;
     protected String password;
-    protected boolean accountNonExpired;
-    protected boolean credentialsNonExpired;
-    protected boolean accountNonLocked;
-    protected boolean enabled;
+    protected boolean accountNonExpired = true;
+    protected boolean credentialsNonExpired = true;
+    protected boolean accountNonLocked = true;
+    protected boolean enabled = true;
 
     @ManyToMany
     @JoinTable(
@@ -41,4 +52,35 @@ public class UserEntity {
             )
     )
     protected Set<RoleEntity> roles;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        return getGrantedAuthorities(roles);
+    }
+
+    private List<String> getPrivileges(Collection<RoleEntity> roles) {
+        List<String> privileges = new ArrayList<>();
+
+        for(RoleEntity role : roles) {
+            privileges.add(role.getName());
+        }
+
+        return privileges;
+    }
+
+    private List<GrantedAuthority> getGrantedAuthorities(Collection<RoleEntity> roles) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        for(RoleEntity role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+
+        return authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
 }
