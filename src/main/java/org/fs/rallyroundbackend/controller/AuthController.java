@@ -1,9 +1,9 @@
 package org.fs.rallyroundbackend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.dto.AuthResponse;
-import org.fs.rallyroundbackend.dto.LoginRequest;
-import org.fs.rallyroundbackend.dto.RegisterRequest;
+import org.fs.rallyroundbackend.dto.auth.AuthResponse;
+import org.fs.rallyroundbackend.dto.auth.LoginRequest;
+import org.fs.rallyroundbackend.dto.auth.RegisterRequest;
 import org.fs.rallyroundbackend.service.imps.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

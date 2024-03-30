@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.dto;
+package org.fs.rallyroundbackend.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
