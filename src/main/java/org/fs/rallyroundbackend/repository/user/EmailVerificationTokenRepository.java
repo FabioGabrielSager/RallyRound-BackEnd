@@ -1,0 +1,12 @@
+package org.fs.rallyroundbackend.repository.user;
+
+import org.fs.rallyroundbackend.entity.users.EmailVerificationTokenEntity;
+import org.fs.rallyroundbackend.entity.users.ParticipantEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationTokenEntity, UUID> {
+    Optional<EmailVerificationTokenEntity> findByUser(ParticipantEntity user);
+}

@@ -1,14 +1,6 @@
 package org.fs.rallyroundbackend.entity.users;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,6 +34,10 @@ public class ParticipantEntity extends UserEntity {
 
     @OneToMany
     private List<ReportEntity> reports;
+
+    @Lob
+    @Column(name = "profile_photo", columnDefinition = "bytea")
+    private byte[] profilePhoto;
 
     @OneToMany(mappedBy = "participant")
     private List<EventParticipantEntity> eventParticipants;
