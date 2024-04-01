@@ -33,7 +33,7 @@ public class SecurityConfig {
                         csrf.disable())
                 .authorizeHttpRequests(authRequest ->
                         authRequest
-                                .requestMatchers("/rr/api/v1/auth/**").permitAll()
+                                .requestMatchers("/rr/api/v1/auth/participant/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
