@@ -45,4 +45,5 @@ public class PlaceEntity {
     @JoinColumn(name = "entity_type_id")
     private EntityTypeEntity entityType;
 
+    private String name;
 }
