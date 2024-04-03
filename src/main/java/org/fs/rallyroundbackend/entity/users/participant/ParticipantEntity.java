@@ -13,6 +13,7 @@ import org.fs.rallyroundbackend.entity.location.PlaceEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "participants")
@@ -48,4 +49,7 @@ public class ParticipantEntity extends UserEntity {
 
     @OneToMany(mappedBy = "sender")
     private List<ChatMessageEntity> sentMessages;
+
+    @OneToMany(mappedBy = "participant")
+    private Set<ParticipantFavoriteActivitiesEntity> favoriteActivities;
 }
