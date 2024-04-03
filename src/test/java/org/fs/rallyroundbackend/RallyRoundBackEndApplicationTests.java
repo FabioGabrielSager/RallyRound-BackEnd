@@ -1,4 +1,4 @@
-package org.example.rallyroundbackend;
+package org.fs.rallyroundbackend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

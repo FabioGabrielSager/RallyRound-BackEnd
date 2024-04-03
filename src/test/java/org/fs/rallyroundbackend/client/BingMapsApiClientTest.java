@@ -1,4 +1,4 @@
-package org.example.rallyroundbackend.client;
+package org.fs.rallyroundbackend.client;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
