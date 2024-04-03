@@ -14,7 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.fs.rallyroundbackend.entity.users.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 
 import java.util.UUID;
 

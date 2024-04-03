@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.entity.users;
+package org.fs.rallyroundbackend.entity.users.participant;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,7 @@ import org.fs.rallyroundbackend.entity.chats.ChatEntity;
 import org.fs.rallyroundbackend.entity.chats.ChatMessageEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.users.UserEntity;
 
 import java.util.List;
 

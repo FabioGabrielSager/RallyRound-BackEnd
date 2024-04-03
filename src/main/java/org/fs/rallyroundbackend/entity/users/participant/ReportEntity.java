@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.entity.users;
+package org.fs.rallyroundbackend.entity.users.participant;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fs.rallyroundbackend.entity.users.UserEntity;
 
 import java.util.UUID;
 

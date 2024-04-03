@@ -7,9 +7,8 @@ import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
-import org.fs.rallyroundbackend.dto.auth.RegisterRequest;
-import org.fs.rallyroundbackend.entity.users.EmailVerificationTokenEntity;
-import org.fs.rallyroundbackend.entity.users.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.event.OnRegistrationRequestEvent;
@@ -23,7 +22,6 @@ import org.fs.rallyroundbackend.service.JwtService;
 import org.fs.rallyroundbackend.util.ImageUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 

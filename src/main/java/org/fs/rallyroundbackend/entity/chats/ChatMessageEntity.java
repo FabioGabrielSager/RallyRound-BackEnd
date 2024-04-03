@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import org.fs.rallyroundbackend.entity.users.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

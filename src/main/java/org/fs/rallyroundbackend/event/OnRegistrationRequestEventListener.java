@@ -3,15 +3,12 @@ package org.fs.rallyroundbackend.event;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.fs.rallyroundbackend.entity.users.EmailVerificationTokenEntity;
-import org.fs.rallyroundbackend.entity.users.ParticipantEntity;
-import org.fs.rallyroundbackend.entity.users.UserEntity;
+import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.repository.user.EmailVerificationTokenRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
-import org.fs.rallyroundbackend.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
@@ -21,7 +18,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Component

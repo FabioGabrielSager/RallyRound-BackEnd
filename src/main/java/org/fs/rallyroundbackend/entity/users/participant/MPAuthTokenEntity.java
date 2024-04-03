@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.entity.users;
+package org.fs.rallyroundbackend.entity.users.participant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
