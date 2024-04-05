@@ -10,6 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.UUID;
 
@@ -21,13 +23,9 @@ public class PlaceEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(columnDefinition = "NUMERIC(10, 8)", nullable = false)
-    private double latitude;
-    @Column(columnDefinition = "NUMERIC(10, 8)", nullable = false)
-    private double longitude;
-
     @ManyToOne
     @JoinColumn(name = "neighborhood_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private NeighborhoodEntity neighborhood;
 
     @Column(name = "postal_code")
@@ -35,14 +33,17 @@ public class PlaceEntity {
 
     @ManyToOne
     @JoinColumn(name = "formatted_address_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private FormattedAddressEntity formattedAddress;
 
     @ManyToOne
     @JoinColumn(name = "address_line_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private AddressLineEntity addressLine;
 
     @ManyToOne
     @JoinColumn(name = "entity_type_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private EntityTypeEntity entityType;
 
     private String name;

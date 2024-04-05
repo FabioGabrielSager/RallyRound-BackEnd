@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 @Entity
 @Getter @Setter
@@ -28,6 +30,7 @@ public class ParticipantFavoriteActivitiesEntity {
     @Id
     @ManyToOne
     @JoinColumn(name = "activity_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private ActivityEntity activity;
 
     @Column(name = "favorite_order", columnDefinition = "SMALLINT", nullable = false)

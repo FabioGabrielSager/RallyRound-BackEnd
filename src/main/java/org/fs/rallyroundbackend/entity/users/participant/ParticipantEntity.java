@@ -11,9 +11,12 @@ import org.fs.rallyroundbackend.entity.chats.ChatMessageEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Entity
 @Table(name = "participants")
@@ -29,6 +32,7 @@ public class ParticipantEntity extends UserEntity {
 
     @OneToOne
     @JoinColumn(name = "place_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     protected PlaceEntity place;
 
     @OneToOne
@@ -37,7 +41,6 @@ public class ParticipantEntity extends UserEntity {
     @OneToMany
     private List<ReportEntity> reports;
 
-    @Lob
     @Column(name = "profile_photo", columnDefinition = "bytea")
     private byte[] profilePhoto;
 
@@ -51,5 +54,6 @@ public class ParticipantEntity extends UserEntity {
     private List<ChatMessageEntity> sentMessages;
 
     @OneToMany(mappedBy = "participant")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private Set<ParticipantFavoriteActivitiesEntity> favoriteActivities;
 }
