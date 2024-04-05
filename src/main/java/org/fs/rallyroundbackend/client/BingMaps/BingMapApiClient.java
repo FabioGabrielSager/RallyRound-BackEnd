@@ -2,7 +2,9 @@ package org.fs.rallyroundbackend.client.BingMaps;
 
 import jakarta.validation.Valid;
 import org.fs.rallyroundbackend.client.BingMaps.request.PlaceRequestForLocationAPI;
-import org.fs.rallyroundbackend.client.BingMaps.response.BingMapApiLocationResponse;
+import org.fs.rallyroundbackend.client.BingMaps.response.autosuggestion.BingMapApiAutosuggestionResponse;
+import org.fs.rallyroundbackend.client.BingMaps.response.location.BingMapApiLocationResponse;
+import org.fs.rallyroundbackend.dto.location.PlaceDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -54,10 +56,39 @@ public class BingMapApiClient {
                         .queryParam("locality", placeRequest.getLocality())
                         .queryParamIfPresent("postalCode", Optional.ofNullable(placeRequest.getPostalCode()))
                         .queryParamIfPresent("addressLine", Optional.ofNullable(placeRequest.getAddressLine()))
-                        .queryParam("countryRegion", "ar")
+                        .queryParam("countryRegion", "AR")
+                        .queryParam("includeNeighborhood", 1)
+                        .queryParam("strictMatch", 1)
                         .queryParam("key", this.BING_MAPS_API_KEY)
                         .build())
                 .retrieve()
                 .bodyToMono(BingMapApiLocationResponse.class);
+    }
+
+    public Mono<PlaceDto[]> getAutosuggestionByPlace(@Valid PlaceDto placeRequest) {
+        System.out.println(placeRequest.getFormattedName());
+        return this.webClient.get().uri(uriBuilder -> uriBuilder
+                        .path("/Autosuggest")
+                        .queryParam("includeEntityTypes", "Place")
+                        .queryParam("culture", "es-AR")
+                        .queryParam("userRegion", "AR")
+                        .queryParam("countryFilter", "AR")
+                        .queryParam("query", placeRequest.getFormattedName())
+                        .queryParam("key", this.BING_MAPS_API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(BingMapApiAutosuggestionResponse.class)
+                .flatMap(response -> {
+                    if (response != null
+                            && response.getResourceSets() != null
+                            && response.getResourceSets().length > 0
+                            && response.getResourceSets()[0] != null
+                            && response.getResourceSets()[0].getResources() != null
+                            && response.getResourceSets()[0].getResources().length > 0) {
+                        return Mono.just(response.getResourceSets()[0].getResources()[0].getValue());
+                    } else {
+                        return Mono.empty();
+                    }
+                });
     }
 }
