@@ -14,6 +14,7 @@ import lombok.Setter;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Getter @Setter
@@ -21,7 +22,7 @@ import org.hibernate.annotations.CascadeType;
 @NoArgsConstructor
 @Builder
 @Table(name = "participant_favorite_activities")
-public class ParticipantFavoriteActivitiesEntity {
+public class ParticipantFavoriteActivitiesEntity implements Comparable<ParticipantFavoriteActivitiesEntity> {
 
     @Id
     @ManyToOne
@@ -35,4 +36,9 @@ public class ParticipantFavoriteActivitiesEntity {
 
     @Column(name = "favorite_order", columnDefinition = "SMALLINT", nullable = false)
     private int favoriteOrder;
+
+    @Override
+    public int compareTo(@NotNull ParticipantFavoriteActivitiesEntity o) {
+        return Integer.compare(this.favoriteOrder, o.getFavoriteOrder());
+    }
 }
