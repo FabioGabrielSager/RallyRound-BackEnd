@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/rr/api/v1/auth/participant/**").permitAll()
-                                .requestMatchers("/rr/api/v1/activities/matches/").permitAll()
+                                .requestMatchers("/rr/api/v1/activities/matches/{name}").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
