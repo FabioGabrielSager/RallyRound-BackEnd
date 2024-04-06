@@ -7,6 +7,7 @@ import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
 import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
 
@@ -32,7 +33,8 @@ public interface AuthService {
      * @return A registration response containing the ID of the newly registered participant.
      * @throws IllegalArgumentException if an account with the provided email already exists.
      */
-    ParticipantRegistrationResponse registerParticipant(ParticipantRegistrationRequest registerRequest, Locale locale);
+    ParticipantRegistrationResponse registerParticipant(ParticipantRegistrationRequest registerRequest,
+                                                        MultipartFile profilePhoto, Locale locale);
 
     /**
      * Verifies the email and confirms the registration of a participant.
