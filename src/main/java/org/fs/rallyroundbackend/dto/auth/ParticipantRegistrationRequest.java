@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.fs.rallyroundbackend.dto.location.PlaceRequest;
-import org.springframework.web.multipart.MultipartFile;
+import org.fs.rallyroundbackend.dto.location.PlaceDto;
 
 @Getter @Setter
 @AllArgsConstructor
@@ -15,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @SuperBuilder
 public class ParticipantRegistrationRequest extends RegisterRequest {
     @NotNull
-    private PlaceRequest place;
+    private PlaceDto place;
     @NotNull
-    private MultipartFile profilePhoto;
+    private ParticipantFavoriteActivityRequest[] favoritesActivities;
 }

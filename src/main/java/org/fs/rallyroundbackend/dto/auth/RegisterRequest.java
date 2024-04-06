@@ -1,5 +1,9 @@
 package org.fs.rallyroundbackend.dto.auth;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,9 +19,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @SuperBuilder
 public class RegisterRequest {
+    @NotBlank
     protected String name;
+    @NotBlank
     protected String lastName;
+    @NotBlank
+    @Email
     protected String email;
+    @NotBlank
     protected LocalDate birthdate;
+    @NotBlank
     protected String password;
 }
