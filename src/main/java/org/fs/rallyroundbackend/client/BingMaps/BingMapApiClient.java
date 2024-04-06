@@ -87,7 +87,7 @@ public class BingMapApiClient {
                             && response.getResourceSets()[0].getResources().length > 0) {
                         return Mono.just(response.getResourceSets()[0].getResources()[0].getValue());
                     } else {
-                        return Mono.empty();
+                        return Mono.just(new PlaceDto[]{});
                     }
                 });
     }
