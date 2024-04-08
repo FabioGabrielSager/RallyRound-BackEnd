@@ -15,6 +15,7 @@ import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.exception.AgeValidationException;
 import org.fs.rallyroundbackend.exception.FavoriteActivitiesNotSpecifiedException;
 import org.fs.rallyroundbackend.exception.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
@@ -46,6 +47,7 @@ import reactor.core.publisher.Mono;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -112,6 +114,17 @@ public class AuthServiceTest {
 
     private LoginRequest loginRequest = new LoginRequest();
 
+    @Test
+    @Tag("registerParticipant")
+    public void registerParticipant_withARegisteredEmail() {
+        when(this.userRepository.existsByEmailAndEnabled(this.pariticpantRegisterRequest.getEmail(), true))
+                .thenReturn(true);
+
+        assertThrows(EntityExistsException.class, () -> this.authService
+                .registerParticipant(this.pariticpantRegisterRequest, null,
+                        this.locale));
+    }
+
     @BeforeEach
     public void setUp() {
         this.authService.setModelMapper(this.modelMapper);
@@ -146,7 +159,7 @@ public class AuthServiceTest {
                 .name("dummy")
                 .lastName("dummy")
                 .email("dummy@email.com")
-                .birthdate(LocalDate.now())
+                .birthdate(LocalDate.of(2001, 10, 31))
                 .password("dummypassword")
                 .place(placeDto)
                 .favoritesActivities(favoriteActivities)
@@ -157,23 +170,24 @@ public class AuthServiceTest {
 
     @Test
     @Tag("registerParticipant")
-    public void registerParticipant_withARegisteredEmail() {
-        when(this.userRepository.existsByEmailAndEnabled(this.pariticpantRegisterRequest.getEmail(), true))
-                .thenReturn(true);
-
-        assertThrows(EntityExistsException.class, () -> this.authService
-                .registerParticipant(this.pariticpantRegisterRequest, null,
-                        this.locale));
-    }
-
-    @Test
-    @Tag("registerParticipant")
     public void registerParticipant_roleNotFound() {
         when(this.userRepository.existsByEmailAndEnabled(this.pariticpantRegisterRequest.getEmail(), true))
                 .thenReturn(false);
         when(this.roleRepository.findByName("ROLE_PARTICIPANT")).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> this.authService
+                .registerParticipant(this.pariticpantRegisterRequest, null,
+                        this.locale));
+    }
+
+    @Test
+    @Tag("registerParticipant")
+    public void registerParticipant_invalidAge() {
+        when(this.userRepository.existsByEmailAndEnabled(this.pariticpantRegisterRequest.getEmail(), true))
+                .thenReturn(false);
+
+        this.pariticpantRegisterRequest.setBirthdate(LocalDate.of(2010, 10, 31));
+        assertThrows(AgeValidationException.class, () -> this.authService
                 .registerParticipant(this.pariticpantRegisterRequest, null,
                         this.locale));
     }

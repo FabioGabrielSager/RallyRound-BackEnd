@@ -18,6 +18,7 @@ import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenE
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivitiesEntity;
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
+import org.fs.rallyroundbackend.exception.AgeValidationException;
 import org.fs.rallyroundbackend.exception.FavoriteActivitiesNotSpecifiedException;
 import org.fs.rallyroundbackend.exception.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
@@ -40,6 +41,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
@@ -112,7 +115,16 @@ public class AuthServiceImp implements AuthService {
             throw new EntityExistsException("There is already an account registered with that email.");
         }
 
-        ParticipantEntity participantEntity = modelMapper.map(request, ParticipantEntity.class);
+        // Validate minimum age
+        // Calculate the age based on the birthdate
+        LocalDate currentDate = LocalDate.now();
+        Period period = Period.between(request.getBirthdate(), currentDate);
+        int age = period.getYears();
+        if(age < 18) {
+            throw new AgeValidationException("Person must be at least 18 years old.");
+        }
+
+            ParticipantEntity participantEntity = modelMapper.map(request, ParticipantEntity.class);
         participantEntity.setPassword(passwordEncoder.encode(participantEntity.getPassword()));
 
         RoleEntity role = this.roleRepository.findByName("ROLE_PARTICIPANT").orElseThrow(
