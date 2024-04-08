@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.print.attribute.standard.Media;
 import java.util.Locale;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/rr/api/v1/auth")
@@ -58,5 +60,11 @@ public class AuthController {
         return ResponseEntity.ok(
                 this.authService.confirmParticipantRegistration(confirmParticipantRegistrationRequest)
         );
+    }
+
+    @PutMapping(value = "/participant/email/token/refresh")
+    public ResponseEntity<Void> refreshEmailVerificationToken(@RequestParam String userId, Locale locale) {
+        this.authService.refreshEmailVerificationToken(UUID.fromString(userId), locale);
+        return ResponseEntity.ok().build();
     }
 }

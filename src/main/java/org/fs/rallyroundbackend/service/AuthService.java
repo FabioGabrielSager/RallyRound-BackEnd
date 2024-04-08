@@ -10,6 +10,7 @@ import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Service interface for Rally Round authentication-related operations.
@@ -44,4 +45,13 @@ public interface AuthService {
      * @throws UnsuccefulyEmailVerificationException if the email verification fails.
      */
     AuthResponse confirmParticipantRegistration(ConfirmParticipantRegistrationRequest confirmRegistrationRequest) throws UnsuccefulyEmailVerificationException;
+
+    /**
+     * Refresh the email verification token of a specific user.
+     *
+     * @param userId The UUID of the user in the database.
+     * @param locale  The locale to be used for the registration process.
+     * @throws IllegalArgumentException if an account with the provided email already exists.
+     */
+    void refreshEmailVerificationToken(UUID userId, Locale locale);
 }

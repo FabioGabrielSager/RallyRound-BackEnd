@@ -3,7 +3,6 @@ package org.fs.rallyroundbackend.service.imps;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.auth.AuthResponse;
 import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
@@ -18,7 +17,7 @@ import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivitiesEntity;
-import org.fs.rallyroundbackend.event.OnRegistrationRequestEvent;
+import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.FavoriteActivitiesNotSpecifiedException;
 import org.fs.rallyroundbackend.exception.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
@@ -30,7 +29,6 @@ import org.fs.rallyroundbackend.repository.user.UserRepository;
 import org.fs.rallyroundbackend.service.AuthService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -181,7 +179,7 @@ public class AuthServiceImp implements AuthService {
 
         ParticipantEntity savedParticipant = userRepository.save(participantEntity);
 
-        applicationEventPublisher.publishEvent(new OnRegistrationRequestEvent(savedParticipant.getId(),
+        applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(savedParticipant.getId(),
                locale));
 
         return ParticipantRegistrationResponse.builder().userId(savedParticipant.getId().toString()).build();
@@ -193,8 +191,7 @@ public class AuthServiceImp implements AuthService {
      * @param confirmRegistrationRequest The confirmation request containing the user ID and verification code.
      * @return An authentication response containing a JWT token.
      * @throws UnsuccefulyEmailVerificationException if the email verification fails.
-     * @throws EntityNotFoundException if a user with the indicated id is not found or
-     * if a verificationToken for that user is no found.
+     * @throws EntityNotFoundException if a user with the indicated id is not found o if a verificationToken for that user is no found.
      */
     @Override
     @Transactional
@@ -209,13 +206,25 @@ public class AuthServiceImp implements AuthService {
                         .orElseThrow( () ->
                                 new EntityNotFoundException("There is no registered validation token for this user."));
 
+        if(emailVerificationTokenEntity.isExpired()) {
+            this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
+            throw new UnsuccefulyEmailVerificationException();
+        }
+
         if (confirmRegistrationRequest.getCode() != emailVerificationTokenEntity.getCode()) {
             throw new UnsuccefulyEmailVerificationException();
         }
 
         user.setEnabled(true);
         this.participantRepository.save(user);
+        this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
 
         return AuthResponse.builder().token(jwtService.getToken(user)).build();
+    }
+
+    @Override
+    public void refreshEmailVerificationToken(UUID userId, Locale locale) {
+        applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(userId,
+                locale));
     }
 }

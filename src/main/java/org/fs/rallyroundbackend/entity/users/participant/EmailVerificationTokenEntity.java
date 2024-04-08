@@ -26,7 +26,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "email_verification_tokens")
 public class EmailVerificationTokenEntity {
-    private static final int EXPIRATION = 60 * 24;
+    private static final int EXPIRATION = 10;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,12 +38,25 @@ public class EmailVerificationTokenEntity {
     @JoinColumn(nullable = false, name = "user_id")
     private ParticipantEntity user;
 
-    private Date expiryDate = this.calculateExpiryDate();
+    private Date expiryDate;
 
-    private Date calculateExpiryDate() {
+    public static Date calculateExpiryDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Timestamp(cal.getTime().getTime()));
         cal.add(Calendar.MINUTE, EmailVerificationTokenEntity.EXPIRATION);
         return new Date(cal.getTime().getTime());
+    }
+
+    public boolean isExpired() {
+        Date currentDate = new Date();
+        return currentDate.after(this.expiryDate);
+    }
+
+    public long getTimeUntilExpiration() {
+        long currentTimeMillis = System.currentTimeMillis();
+        long expiryTimeMillis = expiryDate.getTime();
+        long timeUntilExpirationMillis = expiryTimeMillis - currentTimeMillis;
+        long timeUntilExpirationMinutes = timeUntilExpirationMillis / (1000 * 60); // Convert milliseconds to minutes
+        return timeUntilExpirationMinutes;
     }
 }

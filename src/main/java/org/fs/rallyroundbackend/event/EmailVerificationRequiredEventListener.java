@@ -18,12 +18,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OnRegistrationRequestEventListener implements ApplicationListener<OnRegistrationRequestEvent> {
+public class EmailVerificationRequiredEventListener implements ApplicationListener<EmailVerificationRequiredEvent> {
 
     private final MessageSource messageSource;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -35,21 +36,35 @@ public class OnRegistrationRequestEventListener implements ApplicationListener<O
     @Override
     @Transactional
     @Async
-    public void onApplicationEvent(OnRegistrationRequestEvent event) {
+    public void onApplicationEvent(EmailVerificationRequiredEvent event) {
         Random random = new Random();
         // Generate the code to verify the email a random number of 6 digits.
         int code = 100000 + random.nextInt(900000);
 
         ParticipantEntity participantEntity = participantRepository.findById(event.getUser())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        // Create and save email verification token.
-        emailVerificationTokenRepository.save(
-          EmailVerificationTokenEntity.builder()
-                  .user(participantEntity)
-                  .code(code)
-                  .build()
-        );
+        Optional<EmailVerificationTokenEntity> emailVerificationTokenEntityOptional =
+                this.emailVerificationTokenRepository.findByUser(participantEntity);
+
+        EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity.builder()
+                .user(participantEntity)
+                .expiryDate(EmailVerificationTokenEntity.calculateExpiryDate())
+                .code(code)
+                .build();
+
+        if(emailVerificationTokenEntityOptional.isPresent()) {
+            emailVerificationTokenEntity = emailVerificationTokenEntityOptional.get();
+
+            if(emailVerificationTokenEntity.isExpired() || emailVerificationTokenEntity.getTimeUntilExpiration() < 2)
+            {
+                // Refresh the verification code and save
+                emailVerificationTokenEntity.setExpiryDate(EmailVerificationTokenEntity.calculateExpiryDate());
+                emailVerificationTokenEntity.setCode(code);
+            }
+        }
+
+        this.emailVerificationTokenRepository.save(emailVerificationTokenEntity);
 
         // Get the correct message text and subject based on the client's language and region.
         String mailText = messageSource.getMessage("email.completeRegistration", null, event.getLocale());
@@ -57,7 +72,7 @@ public class OnRegistrationRequestEventListener implements ApplicationListener<O
                 event.getLocale());
 
         // Set the generated email verification code to the mail text.
-        mailText = String.format(mailText, code);
+        mailText = String.format(mailText, emailVerificationTokenEntity.getCode());
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
@@ -72,6 +87,6 @@ public class OnRegistrationRequestEventListener implements ApplicationListener<O
         }
         log.info("Sending email with the verification code.");
         mailSender.send(mimeMessage);
-        log.info("Email with the verification code sended.");
+        log.info("Email with the verification code sent.");
     }
 }
