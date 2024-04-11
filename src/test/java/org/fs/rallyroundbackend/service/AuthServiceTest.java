@@ -46,8 +46,11 @@ import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -251,10 +254,10 @@ public class AuthServiceTest {
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository.save(any(ParticipantEntity.class))).thenReturn(participantEntity);
 
-        assertEquals(participantEntity.getId().toString(),
+        assertEquals(participantEntity.getEmail(),
                 this.authService
                         .registerParticipant(pariticpantRegisterRequest, null, locale)
-                        .getUserId());
+                        .getUserEmail());
     }
 
     @Test
@@ -289,17 +292,17 @@ public class AuthServiceTest {
                 "image/jpeg",
                 new ByteArrayInputStream(contentBytes));
 
-        assertEquals(participantEntity.getId().toString(),
+        assertEquals(participantEntity.getEmail(),
                 this.authService
                         .registerParticipant(pariticpantRegisterRequest, profilePhoto, locale)
-                        .getUserId());
+                        .getUserEmail());
     }
 
     @Test
     @Tag("confirmParticipantRegistration")
     public void confirmParticipantRegistration_incorrectUserId() {
-        when(this.participantRepository
-                .findById(UUID.fromString(this.confirmParticipantRegistrationRequest.getUserId())))
+        when(this.userRepository
+                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.empty());
 
         try {
@@ -316,8 +319,8 @@ public class AuthServiceTest {
         ParticipantEntity participantEntity = this.modelMapper
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
-        when(this.participantRepository
-                .findById(UUID.fromString(this.confirmParticipantRegistrationRequest.getUserId())))
+        when(this.userRepository
+                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
         when(this.emailVerificationTokenRepository.findByUser(participantEntity))
                 .thenReturn(Optional.empty());
@@ -336,8 +339,8 @@ public class AuthServiceTest {
         ParticipantEntity participantEntity = this.modelMapper
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
-        when(this.participantRepository
-                .findById(UUID.fromString(this.confirmParticipantRegistrationRequest.getUserId())))
+        when(this.userRepository
+                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
@@ -345,6 +348,35 @@ public class AuthServiceTest {
                 .id(UUID.randomUUID())
                 .code(654321)
                 .user(participantEntity)
+                .expiryDate(EmailVerificationTokenEntity.calculateExpiryDate(this.locale))
+                .build();
+        when(this.emailVerificationTokenRepository.findByUser(participantEntity))
+                .thenReturn(Optional.of(emailVerificationTokenEntity));
+
+        assertThrows(UnsuccefulyEmailVerificationException.class, () -> {
+            this.authService.confirmParticipantRegistration(this.confirmParticipantRegistrationRequest);
+        });
+    }
+
+    @Test
+    @Tag("confirmParticipantRegistration")
+    public void confirmParticipantRegistration_expiredToken() {
+        ParticipantEntity participantEntity = this.modelMapper
+                .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
+        participantEntity.setId(UUID.randomUUID());
+        when(this.userRepository
+                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .thenReturn(Optional.of(participantEntity));
+
+        Calendar cal = Calendar.getInstance(locale);
+        cal.setTime(new Timestamp(cal.getTime().getTime()));
+        cal.add(Calendar.MINUTE, -5);
+        EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
+                .builder()
+                .id(UUID.randomUUID())
+                .code(123456)
+                .user(participantEntity)
+                .expiryDate(new Date(cal.getTime().getTime()))
                 .build();
         when(this.emailVerificationTokenRepository.findByUser(participantEntity))
                 .thenReturn(Optional.of(emailVerificationTokenEntity));
@@ -360,8 +392,8 @@ public class AuthServiceTest {
         ParticipantEntity participantEntity = this.modelMapper
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
-        when(this.participantRepository
-                .findById(UUID.fromString(this.confirmParticipantRegistrationRequest.getUserId())))
+        when(this.userRepository
+                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
@@ -369,6 +401,7 @@ public class AuthServiceTest {
                 .id(UUID.randomUUID())
                 .code(123456)
                 .user(participantEntity)
+                .expiryDate(EmailVerificationTokenEntity.calculateExpiryDate(this.locale))
                 .build();
         when(this.emailVerificationTokenRepository.findByUser(participantEntity))
                 .thenReturn(Optional.of(emailVerificationTokenEntity));
