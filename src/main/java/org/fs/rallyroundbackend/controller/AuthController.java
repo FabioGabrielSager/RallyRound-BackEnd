@@ -2,18 +2,20 @@ package org.fs.rallyroundbackend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.auth.AuthResponse;
 import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
-import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
 import org.fs.rallyroundbackend.service.AuthService;
+import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -62,9 +63,11 @@ public class AuthController {
         );
     }
 
-    @PutMapping(value = "/participant/email/token/refresh")
-    public ResponseEntity<Void> refreshEmailVerificationToken(@RequestParam String userId, Locale locale) {
-        this.authService.refreshEmailVerificationToken(UUID.fromString(userId), locale);
+    @PutMapping(value = "/participant/refresh/registration/token/{email}")
+    public ResponseEntity<Void> refreshEmailVerificationToken(@PathVariable
+                                                                  @Validated @Email @NotBlank String email,
+                                                              Locale locale) {
+        this.authService.refreshEmailVerificationToken(email, locale);
         return ResponseEntity.ok().build();
     }
 }

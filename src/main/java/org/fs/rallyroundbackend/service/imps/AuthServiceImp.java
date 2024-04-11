@@ -49,7 +49,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
 
 /**
  * Service implementation for authentication-related operations.
@@ -194,27 +193,33 @@ public class AuthServiceImp implements AuthService {
         applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(savedParticipant.getId(),
                locale));
 
-        return ParticipantRegistrationResponse.builder().userId(savedParticipant.getId().toString()).build();
+        return ParticipantRegistrationResponse.builder().userEmail(savedParticipant.getEmail()).build();
     }
 
     /**
      * Verifies the email and confirms the registration of a participant.
      *
-     * @param confirmRegistrationRequest The confirmation request containing the user ID and verification code.
+     * @param confirmRegistrationRequest The confirmation request containing the user email and verification code.
      * @return An authentication response containing a JWT token.
      * @throws UnsuccefulyEmailVerificationException if the email verification fails.
      * @throws EntityNotFoundException if a user with the indicated id is not found o if a verificationToken for that user is no found.
+     * @throws EntityExistsException if an account with the provided email already exists.
      */
     @Override
     @Transactional
     public AuthResponse confirmParticipantRegistration (
             ConfirmParticipantRegistrationRequest confirmRegistrationRequest) {
-        ParticipantEntity user =
-                this.participantRepository.findById(UUID.fromString(confirmRegistrationRequest.getUserId()))
+
+        if (userRepository.existsByEmailAndEnabled(confirmRegistrationRequest.getEmail(), true)) {
+            throw new EntityExistsException("There is already an account registered with that email.");
+        }
+
+        UserEntity user =
+                this.userRepository.findByEmail(confirmRegistrationRequest.getEmail())
                         .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity =
-                this.emailVerificationTokenRepository.findByUser(user)
+                this.emailVerificationTokenRepository.findByUser((ParticipantEntity) user)
                         .orElseThrow( () ->
                                 new EntityNotFoundException("There is no registered validation token for this user."));
 
@@ -228,15 +233,19 @@ public class AuthServiceImp implements AuthService {
         }
 
         user.setEnabled(true);
-        this.participantRepository.save(user);
+        this.userRepository.save(user);
         this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
 
         return AuthResponse.builder().token(jwtService.getToken(user)).build();
     }
 
     @Override
-    public void refreshEmailVerificationToken(UUID userId, Locale locale) {
-        applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(userId,
+    public void refreshEmailVerificationToken(String userEmail, Locale locale) {
+        UserEntity user =
+                this.userRepository.findByEmail(userEmail)
+                        .orElseThrow(() -> new EntityNotFoundException("User not found."));
+
+        applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(user.getId(),
                 locale));
     }
 }

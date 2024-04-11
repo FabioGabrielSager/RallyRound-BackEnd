@@ -49,9 +49,9 @@ public interface AuthService {
     /**
      * Refresh the email verification token of a specific user.
      *
-     * @param userId The UUID of the user in the database.
+     * @param userEmail The email of the user.
      * @param locale  The locale to be used for the registration process.
      * @throws IllegalArgumentException if an account with the provided email already exists.
      */
-    void refreshEmailVerificationToken(UUID userId, Locale locale);
+    void refreshEmailVerificationToken(String userEmail, Locale locale);
 }

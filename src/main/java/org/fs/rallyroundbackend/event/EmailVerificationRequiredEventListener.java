@@ -49,7 +49,7 @@ public class EmailVerificationRequiredEventListener implements ApplicationListen
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity.builder()
                 .user(participantEntity)
-                .expiryDate(EmailVerificationTokenEntity.calculateExpiryDate())
+                .expiryDate(EmailVerificationTokenEntity.calculateExpiryDate(event.getLocale()))
                 .code(code)
                 .build();
 
@@ -59,7 +59,8 @@ public class EmailVerificationRequiredEventListener implements ApplicationListen
             if(emailVerificationTokenEntity.isExpired() || emailVerificationTokenEntity.getTimeUntilExpiration() < 2)
             {
                 // Refresh the verification code and save
-                emailVerificationTokenEntity.setExpiryDate(EmailVerificationTokenEntity.calculateExpiryDate());
+                emailVerificationTokenEntity.setExpiryDate(EmailVerificationTokenEntity
+                        .calculateExpiryDate(event.getLocale()));
                 emailVerificationTokenEntity.setCode(code);
             }
         }

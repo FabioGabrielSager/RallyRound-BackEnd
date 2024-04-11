@@ -8,5 +8,5 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ParticipantRegistrationResponse {
-    private String userId;
+    private String userEmail;
 }

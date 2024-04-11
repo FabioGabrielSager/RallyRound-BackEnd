@@ -13,10 +13,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 @Getter @Setter
@@ -40,8 +42,8 @@ public class EmailVerificationTokenEntity {
 
     private Date expiryDate;
 
-    public static Date calculateExpiryDate() {
-        Calendar cal = Calendar.getInstance();
+    public static Date calculateExpiryDate(Locale locale) {
+        Calendar cal = Calendar.getInstance(locale);
         cal.setTime(new Timestamp(cal.getTime().getTime()));
         cal.add(Calendar.MINUTE, EmailVerificationTokenEntity.EXPIRATION);
         return new Date(cal.getTime().getTime());
