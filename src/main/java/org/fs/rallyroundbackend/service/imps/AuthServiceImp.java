@@ -94,6 +94,7 @@ public class AuthServiceImp implements AuthService {
 
         return AuthResponse.builder()
                 .token(token)
+                .username(userEntity.getName())
                 .build();
     }
 
@@ -236,7 +237,7 @@ public class AuthServiceImp implements AuthService {
         this.userRepository.save(user);
         this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
 
-        return AuthResponse.builder().token(jwtService.getToken(user)).build();
+        return AuthResponse.builder().token(jwtService.getToken(user)).username(user.getName()).build();
     }
 
     @Override
