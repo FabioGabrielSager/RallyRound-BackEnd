@@ -11,10 +11,10 @@ import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
 import org.fs.rallyroundbackend.service.AuthService;
-import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/rr/api/v1/auth")
@@ -70,4 +69,10 @@ public class AuthController {
         this.authService.refreshEmailVerificationToken(email, locale);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("participant/validate/jwt")
+    public ResponseEntity<Boolean> validateJwtToken() {
+        return ResponseEntity.ok(true);
+    }
+
 }
