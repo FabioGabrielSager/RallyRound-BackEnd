@@ -40,7 +40,7 @@ public class UserEntity implements UserDetails {
     protected boolean accountNonLocked = true;
     protected boolean enabled = true;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(
