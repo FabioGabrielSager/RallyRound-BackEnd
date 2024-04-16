@@ -18,7 +18,7 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity user = this.userRepository
-                .findByEmail(username)
+                .findEnabledUserByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("There is not an account registered with the email: "
                         + username));
 

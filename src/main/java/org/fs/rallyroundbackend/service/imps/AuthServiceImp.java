@@ -87,7 +87,7 @@ public class AuthServiceImp implements AuthService {
                 request.getPassword()
         ));
 
-        UserEntity userEntity = userRepository.findByEmail(request.getUsername())
+        UserEntity userEntity = userRepository.findEnabledUserByEmail(request.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         String token = jwtService.getToken(userEntity);

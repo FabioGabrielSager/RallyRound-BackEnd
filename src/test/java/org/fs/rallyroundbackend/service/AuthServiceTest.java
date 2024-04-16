@@ -39,7 +39,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
@@ -48,7 +47,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -302,7 +300,7 @@ public class AuthServiceTest {
     @Tag("confirmParticipantRegistration")
     public void confirmParticipantRegistration_incorrectUserId() {
         when(this.userRepository
-                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.empty());
 
         try {
@@ -320,7 +318,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
         when(this.emailVerificationTokenRepository.findByUser(participantEntity))
                 .thenReturn(Optional.empty());
@@ -340,7 +338,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
@@ -365,7 +363,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         Calendar cal = Calendar.getInstance(locale);
@@ -393,7 +391,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
@@ -417,7 +415,7 @@ public class AuthServiceTest {
     @Test
     @Tag("login")
     public void loginTest_incorrectUsername() {
-        when(this.userRepository.findByEmail(this.loginRequest.getUsername())).thenReturn(Optional.empty());
+        when(this.userRepository.findEnabledUserByEmail(this.loginRequest.getUsername())).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> this.authService.login(this.loginRequest));
     }
@@ -425,7 +423,7 @@ public class AuthServiceTest {
     @Test
     @Tag("login")
     public void loginTest() {
-        when(this.userRepository.findByEmail(this.loginRequest.getUsername())).thenReturn(
+        when(this.userRepository.findEnabledUserByEmail(this.loginRequest.getUsername())).thenReturn(
                 Optional.of(this.modelMapper.map(pariticpantRegisterRequest, UserEntity.class)));
         when(this.jwtService.getToken(any(UserEntity.class))).thenReturn("dummyToken");
         assertEquals("dummyToken",
