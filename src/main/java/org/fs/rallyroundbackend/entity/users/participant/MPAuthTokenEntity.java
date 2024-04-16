@@ -26,19 +26,19 @@ public class MPAuthTokenEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "access_token", nullable = false)
+    @Column(name = "access_token")
     private String accessToken;
-    @Column(name = "token_type", nullable = false)
+    @Column(name = "token_type")
     private String tokenType;
-    @Column(name = "expire_in", nullable = false)
+    @Column(name = "expire_in")
     private int expireIn;
-    @Column(name = "user_code", nullable = false)
+    @Column(name = "user_code")
     private int userId;
-    @Column(name = "scope", nullable = false)
+    @Column(name = "scope")
     private String scope;
-    @Column(name = "refresh_token", nullable = false)
+    @Column(name = "refresh_token")
     private String refreshToken;
-    @Column(name = "public_key", nullable = false)
+    @Column(name = "public_key")
     private String publicKey;
 
     @OneToOne(mappedBy = "mpAuthToken")
