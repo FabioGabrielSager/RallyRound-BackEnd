@@ -36,6 +36,9 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/auth/participant/validate/jwt").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/auth/participant/**").permitAll()
                                 .requestMatchers("/rr/api/v1/activities/matches/{name}").permitAll()
+                                .requestMatchers("/rr/api/v1/mp/auth/url/").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/mp/auth/account/linked/").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/mp/auth/authorize/").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->

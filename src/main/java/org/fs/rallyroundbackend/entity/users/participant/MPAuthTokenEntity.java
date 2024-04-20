@@ -43,4 +43,9 @@ public class MPAuthTokenEntity {
 
     @OneToOne(mappedBy = "mpAuthToken")
     private ParticipantEntity participant;
+
+    public boolean isACompleteToken() {
+        return accessToken != null && tokenType != null && expireIn != 0 && userId != 0
+                && scope != null && refreshToken != null && publicKey != null;
+    }
 }
