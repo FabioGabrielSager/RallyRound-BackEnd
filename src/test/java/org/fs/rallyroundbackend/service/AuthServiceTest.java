@@ -8,9 +8,10 @@ import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
-import org.fs.rallyroundbackend.dto.location.Address;
-import org.fs.rallyroundbackend.dto.location.PlaceDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
+import org.fs.rallyroundbackend.entity.location.EntityType;
 import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
@@ -87,6 +88,8 @@ public class AuthServiceTest {
     private ModelMapper mockedModelMapper;
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
+    @Mock
+    private LocationService locationService;
     @InjectMocks
     private AuthServiceImp authService;
 
@@ -95,7 +98,7 @@ public class AuthServiceTest {
     private ModelMapper modelMapper;
 
     // Dummy data variables
-    private Address address = new Address();
+    private PlaceAddressDto address = new PlaceAddressDto();
 
     private PlaceDto placeDto = new PlaceDto();
 
@@ -131,7 +134,7 @@ public class AuthServiceTest {
         this.authService.setModelMapper(this.modelMapper);
 
         // Setting dummy data variables
-        this.address = Address.builder()
+        this.address = PlaceAddressDto.builder()
                 .adminDistrict("dummyDistrict")
                 .adminDistrict2("dummySubdistric")
                 .locality("dummyLocality")
@@ -143,7 +146,7 @@ public class AuthServiceTest {
                 .build();
 
         this.placeDto = PlaceDto.builder()
-                .entityType("Place")
+                .entityType(EntityType.Place)
                 .address(address)
                 .name("dummy name")
                 .build();
@@ -299,10 +302,6 @@ public class AuthServiceTest {
     @Test
     @Tag("confirmParticipantRegistration")
     public void confirmParticipantRegistration_incorrectUserId() {
-        when(this.userRepository
-                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
-                .thenReturn(Optional.empty());
-
         try {
             this.authService.confirmParticipantRegistration(this.confirmParticipantRegistrationRequest);
         } catch (Exception ex) {
@@ -318,7 +317,9 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .existsByEmailAndEnabled(this.confirmParticipantRegistrationRequest.getEmail(), true))
+                .thenReturn(false);
+        when(this.userRepository.findDisabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
         when(this.emailVerificationTokenRepository.findByUser(participantEntity))
                 .thenReturn(Optional.empty());
@@ -337,8 +338,8 @@ public class AuthServiceTest {
         ParticipantEntity participantEntity = this.modelMapper
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
-        when(this.userRepository
-                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+
+        when(this.userRepository.findDisabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
@@ -363,7 +364,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findDisabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         Calendar cal = Calendar.getInstance(locale);
@@ -391,7 +392,7 @@ public class AuthServiceTest {
                 .map(this.pariticpantRegisterRequest, ParticipantEntity.class);
         participantEntity.setId(UUID.randomUUID());
         when(this.userRepository
-                .findEnabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
+                .findDisabledUserByEmail(this.confirmParticipantRegistrationRequest.getEmail()))
                 .thenReturn(Optional.of(participantEntity));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity = EmailVerificationTokenEntity
