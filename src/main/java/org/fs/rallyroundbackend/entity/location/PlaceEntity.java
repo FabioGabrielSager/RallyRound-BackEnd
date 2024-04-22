@@ -1,14 +1,8 @@
 package org.fs.rallyroundbackend.entity.location;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -17,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Getter @Setter
+@NoArgsConstructor
 @Table(name="places")
 public class PlaceEntity {
     @Id
@@ -29,7 +24,7 @@ public class PlaceEntity {
     private NeighborhoodEntity neighborhood;
 
     @Column(name = "postal_code")
-    private int postalCode;
+    private String postalCode;
 
     @ManyToOne
     @JoinColumn(name = "formatted_address_id")
@@ -41,10 +36,8 @@ public class PlaceEntity {
     @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private AddressLineEntity addressLine;
 
-    @ManyToOne
-    @JoinColumn(name = "entity_type_id")
-    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
-    private EntityTypeEntity entityType;
+    @Enumerated(EnumType.STRING)
+    private EntityType entityType;
 
     private String name;
 }
