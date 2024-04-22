@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.entity.location;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,6 +11,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,5 +32,6 @@ public class AdminSubdistrictEntity {
 
     @ManyToOne
     @JoinColumn(name = "admin_distric_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private AdminDistrictEntity adminDistrict;
 }

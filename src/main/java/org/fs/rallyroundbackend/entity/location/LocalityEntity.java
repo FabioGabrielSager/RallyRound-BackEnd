@@ -10,6 +10,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,5 +31,6 @@ public class LocalityEntity {
 
     @ManyToOne
     @JoinColumn(name = "admin_subdistric_id")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private AdminSubdistrictEntity adminSubdistrict;
 }
