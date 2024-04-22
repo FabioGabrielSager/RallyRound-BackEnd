@@ -10,7 +10,7 @@ import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
-import org.fs.rallyroundbackend.dto.location.PlaceDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
@@ -24,11 +24,11 @@ import org.fs.rallyroundbackend.exception.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.user.EmailVerificationTokenRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
 import org.fs.rallyroundbackend.repository.user.RoleRepository;
 import org.fs.rallyroundbackend.repository.user.UserRepository;
 import org.fs.rallyroundbackend.service.AuthService;
 import org.fs.rallyroundbackend.service.JwtService;
+import org.fs.rallyroundbackend.service.LocationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
@@ -61,13 +61,13 @@ public class AuthServiceImp implements AuthService {
     private ActivityRepository activityRepository;
     private BingMapApiClient bingMapApiClient;
     private RoleRepository roleRepository;
-    private ParticipantRepository participantRepository;
     private EmailVerificationTokenRepository emailVerificationTokenRepository;
     private JwtService jwtService;
     private PasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
     private ModelMapper modelMapper;
     private ApplicationEventPublisher applicationEventPublisher;
+    private LocationService locationService;
 
     public void setModelMapper(@NonNull ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
@@ -124,22 +124,26 @@ public class AuthServiceImp implements AuthService {
             throw new AgeValidationException("Person must be at least 18 years old.");
         }
 
-            ParticipantEntity participantEntity = modelMapper.map(request, ParticipantEntity.class);
+        ParticipantEntity participantEntity = modelMapper.map(request, ParticipantEntity.class);
         participantEntity.setPassword(passwordEncoder.encode(participantEntity.getPassword()));
 
         RoleEntity role = this.roleRepository.findByName("ROLE_PARTICIPANT").orElseThrow(
                 () -> new EntityNotFoundException("Role not found.")
         );
 
+        // Validating the place
         PlaceDto[] bingMapApiAutosuggestionResponse =
                 this.bingMapApiClient.getAutosuggestionByPlace(request.getPlace()).block();
 
         Optional<PlaceDto> filteredPlace = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
                 .filter(p -> p.equals(request.getPlace())).findFirst();
 
+
         if(filteredPlace.isEmpty()) {
             throw new InvalidPlaceException();
         }
+
+        participantEntity.setPlace(this.locationService.getPlaceEntityFromPlaceDto(request.getPlace()));
 
         // If the user provides a profile photo, compress and set it to the ParticipantEntity.
         if (profilePhoto != null) {
