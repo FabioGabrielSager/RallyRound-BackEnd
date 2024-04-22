@@ -220,7 +220,7 @@ public class AuthServiceImp implements AuthService {
         }
 
         UserEntity user =
-                this.userRepository.findByEmail(confirmRegistrationRequest.getEmail())
+                this.userRepository.findDisabledUserByEmail(confirmRegistrationRequest.getEmail())
                         .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         EmailVerificationTokenEntity emailVerificationTokenEntity =
@@ -247,7 +247,7 @@ public class AuthServiceImp implements AuthService {
     @Override
     public void refreshEmailVerificationToken(String userEmail, Locale locale) {
         UserEntity user =
-                this.userRepository.findByEmail(userEmail)
+                this.userRepository.findDisabledUserByEmail(userEmail)
                         .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
         applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(user.getId(),
