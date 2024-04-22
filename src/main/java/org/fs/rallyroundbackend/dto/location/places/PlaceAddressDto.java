@@ -1,8 +1,7 @@
-package org.fs.rallyroundbackend.dto.location;
+package org.fs.rallyroundbackend.dto.location.places;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +16,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Address {
+public class PlaceAddressDto {
     @NotBlank
     private String adminDistrict;
     @NotBlank
@@ -34,8 +33,8 @@ public class Address {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Address) {
-            Address address = (Address) obj;
+        if (obj instanceof PlaceAddressDto) {
+            PlaceAddressDto address = (PlaceAddressDto) obj;
 
             return Objects.equals(this.adminDistrict, address.adminDistrict)
                     && Objects.equals(this.adminDistrict2, address.adminDistrict2)

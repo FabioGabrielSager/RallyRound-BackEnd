@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.dto.location;
+package org.fs.rallyroundbackend.dto.location.places;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fs.rallyroundbackend.entity.location.EntityType;
 
 import java.util.Objects;
 
@@ -18,9 +19,9 @@ import java.util.Objects;
 public class PlaceDto {
     @JsonProperty("__type")
     @NotBlank @NotNull
-    private String entityType;
+    private EntityType entityType;
     @NotNull
-    private Address address;
+    private PlaceAddressDto address;
     private String name;
 
     public String getFormattedName() {
