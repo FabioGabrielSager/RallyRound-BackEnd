@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.fs.rallyroundbackend.dto.location.PlaceDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 
 @Getter @Setter
 @AllArgsConstructor
