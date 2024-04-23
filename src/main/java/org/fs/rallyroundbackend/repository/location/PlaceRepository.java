@@ -6,10 +6,12 @@ import org.fs.rallyroundbackend.entity.location.FormattedAddressEntity;
 import org.fs.rallyroundbackend.entity.location.NeighborhoodEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public interface PlaceRepository extends JpaRepository<PlaceEntity, UUID> {
     Optional<PlaceEntity>  findByNeighborhoodAndPostalCodeAndFormattedAddressAndAddressLineAndEntityTypeAndName(
             NeighborhoodEntity neighborhoodEntity, String postalCode,
