@@ -1,7 +1,10 @@
 package org.fs.rallyroundbackend.service;
 
+import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
+import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
+import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.AddressLineEntity;
 import org.fs.rallyroundbackend.entity.location.AdminDistrictEntity;
 import org.fs.rallyroundbackend.entity.location.AdminSubdistrictEntity;
@@ -9,11 +12,39 @@ import org.fs.rallyroundbackend.entity.location.FormattedAddressEntity;
 import org.fs.rallyroundbackend.entity.location.LocalityEntity;
 import org.fs.rallyroundbackend.entity.location.NeighborhoodEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.location.StreetEntity;
 
 /**
  * Service interface for managing location-related entities.
  */
 public interface LocationService {
+
+    /**
+     * Finds places consulting to the bing maps autosuggest API based on the specified query.
+     *
+     * @param query the query to search for places
+     * @return an array of PlaceDto objects matching the query
+     */
+    PlaceDto[] findPlacesByQuery(String query);
+
+    /**
+     * Finds addresses consulting to the bing maps autosuggest based on the specified query.
+     *
+     * @param query the query to search for addresses
+     * @return an array of AddressDto objects matching the query
+     */
+    AddressDto[] findAddressesByQuery(String query);
+
+    /**
+     * Retrieves or creates a {@link AddressEntity} based on the provided {@link AddressDto}.
+     * If a matching place entity already exists in the database, it is retrieved; otherwise,
+     * a new entity is created, saved and retrieved.
+     *
+     * @param addressDto The address DTO to convert to a place entity.
+     * @return The address entity corresponding to the given address DTO.
+     */
+    AddressEntity getAddressEntityFromAddressDto(AddressDto addressDto);
+
     /**
      * Retrieves or creates a {@link PlaceEntity} based on the provided {@link PlaceDto}.
      * If a matching place entity already exists in the database, it is retrieved; otherwise,
@@ -43,6 +74,16 @@ public interface LocationService {
      * @return The formatted address entity corresponding to the given formatted address string.
      */
     FormattedAddressEntity findOrCreateFormattedAddressEntity(String formattedAddress);
+
+    /**
+     * Retrieves or creates a {@link StreetEntity} based on the provided {@link SpecificAddressDto}.
+     * If a matching street entity already exists in the database, it is retrieved;
+     * otherwise, a new entity is created, saved and retrieved.
+     *
+     * @param address The specific address DTO containing street information.
+     * @return The street entity corresponding to the given place address DTO.
+     */
+    StreetEntity findOrCreateStreet(SpecificAddressDto address);
 
     /**
      * Retrieves or creates a {@link NeighborhoodEntity} based on the provided {@link PlaceAddressDto}.

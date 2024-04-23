@@ -1,8 +1,12 @@
 package org.fs.rallyroundbackend.service.imps;
 
 import lombok.AllArgsConstructor;
+import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
+import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
+import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
+import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.AddressLineEntity;
 import org.fs.rallyroundbackend.entity.location.AdminDistrictEntity;
 import org.fs.rallyroundbackend.entity.location.AdminSubdistrictEntity;
@@ -10,14 +14,18 @@ import org.fs.rallyroundbackend.entity.location.FormattedAddressEntity;
 import org.fs.rallyroundbackend.entity.location.LocalityEntity;
 import org.fs.rallyroundbackend.entity.location.NeighborhoodEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.location.StreetEntity;
 import org.fs.rallyroundbackend.repository.location.AddressLineRepository;
+import org.fs.rallyroundbackend.repository.location.AddressRepository;
 import org.fs.rallyroundbackend.repository.location.AdminDistrictRepository;
 import org.fs.rallyroundbackend.repository.location.AdminSubdistricRepository;
 import org.fs.rallyroundbackend.repository.location.FormattedAddressRepository;
 import org.fs.rallyroundbackend.repository.location.LocalityRepository;
 import org.fs.rallyroundbackend.repository.location.NeighboorhoodRepository;
 import org.fs.rallyroundbackend.repository.location.PlaceRepository;
+import org.fs.rallyroundbackend.repository.location.StreetRepository;
 import org.fs.rallyroundbackend.service.LocationService;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +38,60 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class LocationServiceImp implements LocationService {
+    private BingMapApiClient bingMapApiClient;
     private AdminDistrictRepository adminDistrictRepository;
     private AdminSubdistricRepository adminSubdistricRepository;
     private LocalityRepository localityRepository;
     private NeighboorhoodRepository neighboorhoodRepository;
+    private StreetRepository streetRepository;
     private FormattedAddressRepository formattedAddressRepository;
     private AddressLineRepository addressLineRepository;
     private PlaceRepository placeRepository;
+    private AddressRepository addressRepository;
+    private ModelMapper modelMapper;
+
+    @Override
+    public PlaceDto[] findPlacesByQuery(String query) {
+        PlaceDto[] result = this.bingMapApiClient.getAutosuggestionByPlace(query).block();
+        return result;
+    }
+
+    @Override
+    public AddressDto[] findAddressesByQuery(String query) {
+        return this.bingMapApiClient.getAutosuggestionByAddress(query).block();
+    }
+
+    @Override
+    public AddressEntity getAddressEntityFromAddressDto(AddressDto addressDto) {
+        SpecificAddressDto address = addressDto.getAddress();
+
+        StreetEntity streetEntity = findOrCreateStreet(address);
+
+        FormattedAddressEntity formattedAddressEntity =
+                findOrCreateFormattedAddressEntity(address.getFormattedAddress());
+
+        AddressLineEntity addressLineEntity = findOrCreateAddressLineEntity(address.getAddressLine());
+
+        AddressEntity addressEntity = new AddressEntity();
+
+        Optional<AddressEntity> addressEntityOptional = this.addressRepository
+                .findByStreetAndAddressLineAndFormattedAddressAndPostalCode(
+                        streetEntity, addressLineEntity, formattedAddressEntity, address.getPostalCode()
+                );
+
+        if (addressEntityOptional.isPresent()) {
+            addressEntity = addressEntityOptional.get();
+        } else {
+            addressEntity.setStreet(streetEntity);
+            addressEntity.setFormattedAddress(formattedAddressEntity);
+            addressEntity.setAddressLine(addressLineEntity);
+            addressEntity.setPostalCode(address.getPostalCode());
+
+            this.addressRepository.save(addressEntity);
+        }
+
+        return addressEntity;
+    }
 
     @Transactional
     @Override
@@ -110,6 +165,31 @@ public class LocationServiceImp implements LocationService {
 
     @Transactional
     @Override
+    public StreetEntity findOrCreateStreet(SpecificAddressDto address) {
+        NeighborhoodEntity neighborhoodEntity = findOrCreateNeighbourhood(
+                this.modelMapper.map(address, PlaceAddressDto.class));
+
+        StreetEntity streetEntity = new StreetEntity();
+
+        Optional<StreetEntity> streetEntityOptional = this.streetRepository
+                .findByNameAndNeighborhood(address.getStreetName(), neighborhoodEntity);
+
+        if (streetEntityOptional.isPresent()) {
+            streetEntity = streetEntityOptional.get();
+        } else {
+            streetEntity.setName(address.getNeighborhood());
+            neighborhoodEntity.getStreets().add(streetEntity);
+            streetEntity.setNeighborhood(neighborhoodEntity);
+
+            // With save the associated neighborhood is also updated due to cascading entities configuration
+            this.streetRepository.save(streetEntity);
+        }
+
+        return streetEntity;
+    }
+
+    @Transactional
+    @Override
     public NeighborhoodEntity findOrCreateNeighbourhood(PlaceAddressDto address) {
         LocalityEntity localityEntity = findOrCreateLocality(address.getLocality(), address.getAdminDistrict2(),
                 address.getAdminDistrict());
@@ -124,6 +204,7 @@ public class LocationServiceImp implements LocationService {
         } else {
             neighborhoodEntity.setName(address.getNeighborhood());
             localityEntity.getNeighborhoods().add(neighborhoodEntity);
+            neighborhoodEntity.setStreets(new ArrayList<>());
             neighborhoodEntity.setLocality(localityEntity);
 
             // With save the associated localityEntity is also updated due to cascading entities configuration
