@@ -16,7 +16,6 @@ import org.hibernate.annotations.CascadeType;
 
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Entity
 @Table(name = "participants")
@@ -30,10 +29,9 @@ public class ParticipantEntity extends UserEntity {
     @Column(nullable = false)
     private ParticipantReputation reputation = ParticipantReputation.BUENA;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "place_id")
-    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
-    protected PlaceEntity place;
+    private PlaceEntity place;
 
     @OneToOne
     private MPAuthTokenEntity mpAuthToken;
