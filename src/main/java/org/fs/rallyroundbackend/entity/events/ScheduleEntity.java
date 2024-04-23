@@ -24,8 +24,6 @@ public class ScheduleEntity {
 
     @Column(name = "starting_hour", nullable = false)
     private Time startingHour;
-    @Column(name = "ending_hour", nullable = false)
-    private Time endingHour;
 
     @OneToMany(mappedBy = "schedule")
     private List<EventSchedulesEntity> eventsSchedules;
