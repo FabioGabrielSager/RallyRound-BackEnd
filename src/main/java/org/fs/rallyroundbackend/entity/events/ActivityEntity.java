@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 public class ActivityEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
