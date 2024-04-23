@@ -1,5 +1,6 @@
-package org.fs.rallyroundbackend.dto.location.places;
+package org.fs.rallyroundbackend.dto.location.addresses;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,27 +13,28 @@ import org.fs.rallyroundbackend.entity.location.EntityType;
 
 import java.util.Objects;
 
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PlaceDto {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AddressDto {
     @JsonProperty("__type")
-    @NotBlank @NotNull
+    @NotBlank
+    @NotNull
     private EntityType entityType;
     @NotNull
-    private PlaceAddressDto address;
-    private String name;
+    private SpecificAddressDto address;
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof PlaceDto) {
+        if(obj instanceof AddressDto) {
 
-            PlaceDto placeDto = (PlaceDto) obj;
+            AddressDto addressDto = (AddressDto) obj;
 
-            return Objects.equals(this.entityType, placeDto.entityType)
-                    && Objects.equals(this.name, placeDto.name)
-                    && Objects.equals(this.address, placeDto.address);
+            return Objects.equals(this.entityType, addressDto.entityType)
+                    && Objects.equals(this.address, addressDto.address);
         }
 
         return false;
