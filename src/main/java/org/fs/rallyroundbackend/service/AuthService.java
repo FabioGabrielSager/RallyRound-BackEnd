@@ -6,7 +6,7 @@ import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
-import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.auth.UnsuccefulyEmailVerificationException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;

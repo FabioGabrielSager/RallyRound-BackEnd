@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.exception;
+package org.fs.rallyroundbackend.exception.auth;
 
 /**
  * Exception that is thrown if the email verification process fails

@@ -18,10 +18,10 @@ import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenE
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivitiesEntity;
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
-import org.fs.rallyroundbackend.exception.AgeValidationException;
-import org.fs.rallyroundbackend.exception.FavoriteActivitiesNotSpecifiedException;
-import org.fs.rallyroundbackend.exception.InvalidPlaceException;
-import org.fs.rallyroundbackend.exception.UnsuccefulyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
+import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
+import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
+import org.fs.rallyroundbackend.exception.auth.UnsuccefulyEmailVerificationException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.user.EmailVerificationTokenRepository;
 import org.fs.rallyroundbackend.repository.user.RoleRepository;

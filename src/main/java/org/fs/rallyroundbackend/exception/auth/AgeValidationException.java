@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.exception;
+package org.fs.rallyroundbackend.exception.auth;
 
 public class AgeValidationException extends RuntimeException {
     public AgeValidationException(String message) {

@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.exception;
+package org.fs.rallyroundbackend.exception.location;
 
 public class InvalidPlaceException extends RuntimeException {
     public InvalidPlaceException() {

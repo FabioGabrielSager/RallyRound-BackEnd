@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.exception;
+package org.fs.rallyroundbackend.exception.auth;
 
 public class FavoriteActivitiesNotSpecifiedException extends RuntimeException {
     public FavoriteActivitiesNotSpecifiedException() {
