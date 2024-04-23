@@ -35,5 +35,5 @@ public class AddressEntity {
     private FormattedAddressEntity formattedAddress;
 
     @Column(name = "postal_code")
-    private int postalCode;
+    private String postalCode;
 }
