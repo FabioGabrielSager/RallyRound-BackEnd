@@ -48,6 +48,7 @@ public class SecurityConfig {
                         sessionManager
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(mercadoPagoAccountLinkFilter, JwtAuthenticationFilter.class)
                 .build();
 
 
