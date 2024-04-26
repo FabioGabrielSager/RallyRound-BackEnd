@@ -22,6 +22,7 @@ import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
+import org.fs.rallyroundbackend.service.MPAuthService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
+
+/**
+ * {@link EventService} implementation.
+ */
 @Service
 @AllArgsConstructor
 public class EventServiceImp implements EventService {

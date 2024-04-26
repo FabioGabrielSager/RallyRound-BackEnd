@@ -21,7 +21,7 @@ import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
 import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
-import org.fs.rallyroundbackend.exception.auth.UnsuccefulyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.user.EmailVerificationTokenRepository;
 import org.fs.rallyroundbackend.repository.user.RoleRepository;
@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Service implementation for authentication-related operations.
+ * {@link AuthService} implementation for authentication-related operations.
  */
 @Service
 @AllArgsConstructor
@@ -73,13 +73,6 @@ public class AuthServiceImp implements AuthService {
         this.modelMapper = modelMapper;
     }
 
-    /**
-     * Logs in a user given their login credentials.
-     *
-     * @param request The login request containing the username and password.
-     * @return An authentication response containing a JWT token.
-     * @throws EntityNotFoundException if the specified user is not found.
-     */
     @Override
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -98,16 +91,6 @@ public class AuthServiceImp implements AuthService {
                 .build();
     }
 
-    /**
-     * Registers a new participant.
-     *
-     * @param request The registration request containing participant information.
-     * @param profilePhoto the user profile photo.
-     * @param locale  The locale to be used for the registration process.
-     * @return A registration response containing the ID of the newly registered participant.
-     * @throws EntityExistsException if an account with the provided email already exists.
-     * @throws InvalidPlaceException if the provided place is not found using the Bing Maps API.
-     */
     @Override
     public ParticipantRegistrationResponse registerParticipant(@Validated ParticipantRegistrationRequest request,
                                                                MultipartFile profilePhoto, Locale locale) {
@@ -201,15 +184,7 @@ public class AuthServiceImp implements AuthService {
         return ParticipantRegistrationResponse.builder().userEmail(savedParticipant.getEmail()).build();
     }
 
-    /**
-     * Verifies the email and confirms the registration of a participant.
-     *
-     * @param confirmRegistrationRequest The confirmation request containing the user email and verification code.
-     * @return An authentication response containing a JWT token.
-     * @throws UnsuccefulyEmailVerificationException if the email verification fails.
-     * @throws EntityNotFoundException if a user with the indicated id is not found o if a verificationToken for that user is no found.
-     * @throws EntityExistsException if an account with the provided email already exists.
-     */
+
     @Override
     @Transactional
     public AuthResponse confirmParticipantRegistration (
@@ -230,11 +205,11 @@ public class AuthServiceImp implements AuthService {
 
         if(emailVerificationTokenEntity.isExpired()) {
             this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
-            throw new UnsuccefulyEmailVerificationException();
+            throw new UnsuccessfullyEmailVerificationException();
         }
 
         if (confirmRegistrationRequest.getCode() != emailVerificationTokenEntity.getCode()) {
-            throw new UnsuccefulyEmailVerificationException();
+            throw new UnsuccessfullyEmailVerificationException();
         }
 
         user.setEnabled(true);

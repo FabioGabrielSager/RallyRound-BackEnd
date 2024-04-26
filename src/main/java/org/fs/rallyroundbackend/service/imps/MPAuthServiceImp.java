@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * {@link MPAuthService} implementation.
+ */
 @Service
 public class MPAuthServiceImp implements MPAuthService {
     @Value("${mp.app.id}")

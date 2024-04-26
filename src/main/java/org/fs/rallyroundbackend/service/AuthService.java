@@ -1,14 +1,19 @@
 package org.fs.rallyroundbackend.service;
 
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.auth.AuthResponse;
 import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
-import org.fs.rallyroundbackend.exception.auth.UnsuccefulyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
+import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
+import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -31,7 +36,11 @@ public interface AuthService {
      * @param registerRequest The registration request containing participant information.
      * @param locale  The locale to be used for the registration process.
      * @return A registration response containing the ID of the newly registered participant.
-     * @throws IllegalArgumentException if an account with the provided email already exists.
+     * @throws EntityExistsException              If there is already an account registered with the provided email.
+     * @throws AgeValidationException             If the person's age is less than 18 years old.
+     * @throws InvalidPlaceException              If the provided place is not found.
+     * @throws FavoriteActivitiesNotSpecifiedException If no favorite activities are specified in the registration
+     * request.
      */
     ParticipantRegistrationResponse registerParticipant(ParticipantRegistrationRequest registerRequest,
                                                         MultipartFile profilePhoto, Locale locale);
@@ -39,18 +48,21 @@ public interface AuthService {
     /**
      * Verifies the email and confirms the registration of a participant.
      *
-     * @param confirmRegistrationRequest The confirmation request containing the user ID and verification code.
+     * @param confirmRegistrationRequest The confirmation request containing the user email and verification code.
      * @return An authentication response containing a JWT token.
-     * @throws UnsuccefulyEmailVerificationException if the email verification fails.
+     * @throws UnsuccessfullyEmailVerificationException if the email verification fails.
+     * @throws EntityNotFoundException if a user with the indicated id is not found o if a verificationToken for
+     * that user is no found.
+     * @throws EntityExistsException if an account with the provided email already exists.
      */
-    AuthResponse confirmParticipantRegistration(ConfirmParticipantRegistrationRequest confirmRegistrationRequest) throws UnsuccefulyEmailVerificationException;
+    AuthResponse confirmParticipantRegistration(ConfirmParticipantRegistrationRequest confirmRegistrationRequest);
 
     /**
      * Refresh the email verification token of a specific user.
      *
      * @param userEmail The email of the user.
      * @param locale  The locale to be used for the registration process.
-     * @throws IllegalArgumentException if an account with the provided email already exists.
+     * @throws EntityNotFoundException if a user with the indicated id is not found.
      */
     void refreshEmailVerificationToken(String userEmail, Locale locale);
 }
