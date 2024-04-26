@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import java.util.UUID;
 
@@ -42,5 +44,6 @@ public class EventParticipantEntity {
     private boolean isEventCreator;
 
     @OneToOne(mappedBy = "eventParticipant")
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
     private ScheduleVoteEntity scheduleVote;
 }

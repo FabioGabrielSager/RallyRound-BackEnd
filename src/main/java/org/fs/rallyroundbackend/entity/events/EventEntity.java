@@ -48,6 +48,12 @@ public class EventEntity {
     @Column(name = "inscription_price", nullable = false)
     private BigDecimal inscriptionPrice;
 
+    @Column(name = "participants_limit", nullable = false)
+    private int participantsLimit;
+
+    @Column(name = "is_event_creator_participant", nullable = false)
+    private boolean isEventCreatorParticipant;
+
     @ManyToOne
     @JoinColumn(name = "activity_id")
     @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
@@ -61,6 +67,7 @@ public class EventEntity {
     private List<EventSchedulesEntity> eventSchedules;
 
     @OneToMany(mappedBy = "event")
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
     private List<EventParticipantEntity> eventParticipants;
 
     @OneToOne(mappedBy = "event")
