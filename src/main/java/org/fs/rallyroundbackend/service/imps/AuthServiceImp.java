@@ -133,7 +133,7 @@ public class AuthServiceImp implements AuthService {
 
         // Validating the place
         PlaceDto[] bingMapApiAutosuggestionResponse =
-                this.bingMapApiClient.getAutosuggestionByPlace(request.getPlace().getAddress().getFormattedAddress()).block();
+                this.bingMapApiClient.getAutosuggestionByPlace(request.getPlace().getAddress().getAddressLine()).block();
 
         Optional<PlaceDto> filteredPlace = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
                 .filter(p -> p.equals(request.getPlace())).findFirst();
