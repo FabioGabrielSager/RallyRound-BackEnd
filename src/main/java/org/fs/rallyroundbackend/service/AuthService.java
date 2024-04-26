@@ -10,7 +10,6 @@ import org.fs.rallyroundbackend.exception.auth.UnsuccefulyEmailVerificationExcep
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
-import java.util.UUID;
 
 /**
  * Service interface for Rally Round authentication-related operations.
