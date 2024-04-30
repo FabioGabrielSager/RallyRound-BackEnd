@@ -26,6 +26,9 @@ public class AddressEntity {
     @JoinColumn(name = "street_id")
     private StreetEntity street;
 
+    @Column(name = "house_number")
+    private String houseNumber;
+
     @ManyToOne
     @JoinColumn(name = "address_line_id")
     private AddressLineEntity addressLine;

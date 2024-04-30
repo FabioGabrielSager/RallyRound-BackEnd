@@ -35,11 +35,8 @@ public class EventEntity {
     @Basic(fetch = FetchType.EAGER)
     private String description;
 
-    @Column(name = "house_number", nullable = false)
-    private String houseNumber;
-
     @Column(nullable = false)
-    private int duration;
+    private double duration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "duration_unit", nullable = false)
@@ -61,9 +58,10 @@ public class EventEntity {
 
     @ManyToOne
     @JoinColumn(name = "address_id")
-    private AddressEntity addressEntity;
+    private AddressEntity address;
 
     @OneToMany(mappedBy = "event")
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
     private List<EventSchedulesEntity> eventSchedules;
 
     @OneToMany(mappedBy = "event")
