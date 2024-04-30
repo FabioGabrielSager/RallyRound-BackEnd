@@ -75,8 +75,9 @@ public class LocationServiceImp implements LocationService {
         AddressEntity addressEntity = new AddressEntity();
 
         Optional<AddressEntity> addressEntityOptional = this.addressRepository
-                .findByStreetAndAddressLineAndFormattedAddressAndPostalCode(
-                        streetEntity, addressLineEntity, formattedAddressEntity, address.getPostalCode()
+                .findByStreetAndAddressLineAndFormattedAddressAndPostalCodeAndHouseNumber(
+                        streetEntity, addressLineEntity, formattedAddressEntity, address.getPostalCode(),
+                        address.getHouseNumber()
                 );
 
         if (addressEntityOptional.isPresent()) {

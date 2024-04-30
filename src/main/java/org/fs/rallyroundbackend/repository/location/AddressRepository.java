@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
-    Optional<AddressEntity> findByStreetAndAddressLineAndFormattedAddressAndPostalCode(
+    Optional<AddressEntity> findByStreetAndAddressLineAndFormattedAddressAndPostalCodeAndHouseNumber(
             StreetEntity streetEntity, AddressLineEntity addressLineEntity,
-            FormattedAddressEntity formattedAddress, String postalCode
+            FormattedAddressEntity formattedAddress, String postalCode, String houseNumber
     );
 }
