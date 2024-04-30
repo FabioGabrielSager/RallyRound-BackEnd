@@ -11,7 +11,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class EventResponse {
+public class EventCompleteDto {
     private UUID eventId;
     private EventDto event;
     private EventParticipantResponse[] eventParticipants;

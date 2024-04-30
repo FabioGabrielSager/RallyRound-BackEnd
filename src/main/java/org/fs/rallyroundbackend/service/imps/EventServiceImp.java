@@ -3,9 +3,11 @@ package org.fs.rallyroundbackend.service.imps;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
-import org.fs.rallyroundbackend.dto.event.EventResponse;
+import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
 import org.fs.rallyroundbackend.dto.event.EventParticipantResponse;
+import org.fs.rallyroundbackend.dto.event.EventResumeDto;
+import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
@@ -22,14 +24,15 @@ import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
-import org.fs.rallyroundbackend.service.MPAuthService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -49,7 +52,7 @@ public class EventServiceImp implements EventService {
     private final LocationService locationService;
 
     @Override
-    public EventResponse createEvent(EventDto request, String creatorEmail) {
+    public EventCompleteDto createEvent(EventDto request, String creatorEmail) {
         ParticipantEntity creator = participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
                 () -> new EntityNotFoundException("User with email " + creatorEmail + " not found")
         );
@@ -89,10 +92,7 @@ public class EventServiceImp implements EventService {
             throw new InvalidAddressException();
         }
 
-        eventEntity.setAddressEntity(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
-
-        // Adding event street number
-        eventEntity.setHouseNumber(request.getAddress().getAddress().getHouseNumber());
+        eventEntity.setAddress(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
 
         // Adding event activity
         ActivityEntity activityEntity = new ActivityEntity();
@@ -110,9 +110,9 @@ public class EventServiceImp implements EventService {
         eventEntity.setEventSchedules(new ArrayList<>());
 
         for(LocalTime t : request.getStartHours()) {
-            Optional<ScheduleEntity> scheduleEntity = scheduleRepository.findByStartingHour(Time.valueOf(t));
             EventSchedulesEntity eventSchedule = new EventSchedulesEntity();
             eventSchedule.setEvent(eventEntity);
+            Optional<ScheduleEntity> scheduleEntity = scheduleRepository.findByStartingHour(Time.valueOf(t));
 
             if (scheduleEntity.isPresent()) {
                 eventSchedule.setSchedule(scheduleEntity.get());
@@ -128,7 +128,79 @@ public class EventServiceImp implements EventService {
 
         this.eventRepository.save(eventEntity);
 
-        return new EventResponse(eventEntity.getId(), request,
+        return new EventCompleteDto(eventEntity.getId(), request,
                 this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantResponse[].class));
+    }
+
+    @Override
+    public EventResumePageResponse getEvents(String activity, String neighborhood, String locality,
+                                             String adminSubdistrict, String adminDistrict, LocalDate dateFrom,
+                                             LocalDate dateTo, List<LocalTime> hours, Integer limit, Integer page) {
+        LocalDate notNullDateFrom = dateFrom;
+        if(notNullDateFrom == null) {
+            notNullDateFrom = LocalDate.now();
+        }
+
+        LocalDate notNullDateTo = dateTo;
+        if(notNullDateTo == null) {
+            notNullDateTo = notNullDateFrom.plusDays(7);
+        }
+
+        Integer notNullLimit = limit;
+        if(limit == null) {
+            notNullLimit = 10;
+        }
+
+        Integer notNullPage = page;
+        if(page == null) {
+            notNullPage = 1;
+        }
+
+        List<EventEntity> eventEntities = this.eventRepository
+                    .findAllByActivityOrAndLocationOrAndDatesOrAndHours(
+                            activity,
+                            neighborhood,
+                            locality,
+                            adminSubdistrict,
+                            adminDistrict,
+                            notNullDateFrom,
+                            notNullDateTo,
+                            hours != null ? hours.stream().map(Time::valueOf).toList() : null,
+                            notNullLimit,
+                            (notNullPage - 1) * notNullLimit
+                    );
+
+        Long totalElements = this.eventRepository.countAllByActivityOrAndLocationOrAndDatesOrAndHours(
+                activity,
+                neighborhood,
+                locality,
+                adminSubdistrict,
+                adminDistrict,
+                notNullDateFrom,
+                notNullDateTo,
+                hours != null ? hours.stream().map(Time::valueOf).toList() : null
+        );
+        
+        List<EventResumeDto> eventResumeResponses = new ArrayList<>();
+
+        for(EventEntity eventEntity : eventEntities) {
+            EventResumeDto eventResumeResponse = EventResumeDto.builder()
+                    .eventId(eventEntity.getId())
+                    .activity(eventEntity.getActivity().getName())
+                    .duration(eventEntity.getDuration())
+                    .durationUnit(eventEntity.getDurationUnit())
+                    .inscriptionPrice(eventEntity.getInscriptionPrice())
+                    .date(eventEntity.getDate())
+                    .address(this.modelMapper.map(eventEntity.getAddress(), AddressDto.class))
+                    .participantsLimit(eventEntity.getParticipantsLimit())
+                    .participantsCount(eventEntity.getEventParticipants().size())
+                    .eventSchedules(this.modelMapper.map(eventEntity.getEventSchedules(), LocalTime[].class))
+                    .build();
+
+            eventResumeResponses.add(eventResumeResponse);
+        }
+
+        return new EventResumePageResponse(notNullPage, notNullLimit, totalElements,
+                this.modelMapper.map(eventResumeResponses, EventResumeDto[].class));
     }
 }
