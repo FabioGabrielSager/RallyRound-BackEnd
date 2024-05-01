@@ -193,7 +193,9 @@ public class EventServiceImp implements EventService {
                     .date(eventEntity.getDate())
                     .address(this.modelMapper.map(eventEntity.getAddress(), AddressDto.class))
                     .participantsLimit(eventEntity.getParticipantsLimit())
-                    .participantsCount(eventEntity.getEventParticipants().size())
+                    .participantsCount(eventEntity.isEventCreatorParticipant()
+                            ? eventEntity.getEventParticipants().size()
+                            : eventEntity.getEventParticipants().size() - 1)
                     .eventSchedules(this.modelMapper.map(eventEntity.getEventSchedules(), LocalTime[].class))
                     .build();
 
