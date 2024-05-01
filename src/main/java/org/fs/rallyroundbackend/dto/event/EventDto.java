@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,7 +31,8 @@ public class EventDto {
     private String description;
     @Size(min = 1)
     @NotNull
-    private LocalTime[] startHours;
+    @JsonProperty("startingHours")
+    private LocalTime[] eventSchedules;
     @NotBlank
     private String duration;
     @NotNull

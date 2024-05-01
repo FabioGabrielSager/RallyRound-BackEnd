@@ -67,7 +67,7 @@ public class EventServiceImp implements EventService {
 
         // If the event creator participates of the event, register its selected starting hour
         if(request.isEventCreatorIsParticipant()) {
-            if(Arrays.stream(request.getStartHours()).noneMatch(h ->
+            if(Arrays.stream(request.getEventSchedules()).noneMatch(h ->
                     h.equals(request.getEventCreatorSelectedStartHour()))) {
                 throw new InvalidSelectedHourException();
             }
@@ -109,7 +109,7 @@ public class EventServiceImp implements EventService {
         // Adding possible starting hours
         eventEntity.setEventSchedules(new ArrayList<>());
 
-        for(LocalTime t : request.getStartHours()) {
+        for(LocalTime t : request.getEventSchedules()) {
             EventSchedulesEntity eventSchedule = new EventSchedulesEntity();
             eventSchedule.setEvent(eventEntity);
             Optional<ScheduleEntity> scheduleEntity = scheduleRepository.findByStartingHour(Time.valueOf(t));
@@ -129,7 +129,7 @@ public class EventServiceImp implements EventService {
         this.eventRepository.save(eventEntity);
 
         return new EventCompleteDto(eventEntity.getId(), request,
-                this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantResponse[].class));
+                List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantResponse[].class)));
     }
 
     @Override
@@ -202,5 +202,8 @@ public class EventServiceImp implements EventService {
 
         return new EventResumePageResponse(notNullPage, notNullLimit, totalElements,
                 this.modelMapper.map(eventResumeResponses, EventResumeDto[].class));
+        return new EventResumePageResponse(notNullPage, notNullLimit, totalElements, eventResumeResponses);
+    }
+
     }
 }

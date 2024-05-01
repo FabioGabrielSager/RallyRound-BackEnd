@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -15,5 +17,5 @@ public class EventResumePageResponse {
     private int page;
     private int pageSize;
     private long totalElements;
-    private EventResumeDto[] results;
+    private List<EventResumeDto> results;
 }

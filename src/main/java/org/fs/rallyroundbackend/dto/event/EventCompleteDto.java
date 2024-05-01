@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Setter
 @Getter
 public class EventCompleteDto {
-    private UUID eventId;
-    private EventDto event;
-    private EventParticipantResponse[] eventParticipants;
+    protected UUID eventId;
+    protected EventDto event;
+    protected List<EventParticipantResponse> eventParticipants;
 }
