@@ -12,8 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter @Getter
 public class ParticipantResume {
-    private UUID id;
-    private String name;
+    protected UUID id;
+    protected String name;
     @JsonProperty("base64encodedProfileImage")
-    private String profilePhoto;
+    protected String profilePhoto;
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
+import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
 import org.fs.rallyroundbackend.dto.event.EventParticipantResponse;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
@@ -16,6 +17,7 @@ import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.events.ScheduleEntity;
 import org.fs.rallyroundbackend.entity.events.ScheduleVoteEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
 import org.fs.rallyroundbackend.exception.location.InvalidAddressException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
@@ -35,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 
 /**
@@ -202,10 +205,33 @@ public class EventServiceImp implements EventService {
             eventResumeResponses.add(eventResumeResponse);
         }
 
-        return new EventResumePageResponse(notNullPage, notNullLimit, totalElements,
-                this.modelMapper.map(eventResumeResponses, EventResumeDto[].class));
         return new EventResumePageResponse(notNullPage, notNullLimit, totalElements, eventResumeResponses);
     }
 
+    @Override
+    public EventCompleteWithCreatorReputationDto findEventById(UUID eventId) {
+        EventEntity eventEntity = this.eventRepository.findById(eventId).orElseThrow(
+                () -> new EntityNotFoundException("event not found")
+        );
+
+        Optional<EventParticipantEntity> eventCreatorEntity = eventEntity.getEventParticipants()
+                .stream()
+                .filter(ep -> ep.isEventCreator())
+                .findFirst();
+
+        ParticipantReputation eventCreatorReputation = null;
+        if(eventCreatorEntity.isPresent()) {
+            ParticipantEntity creatorEntity = eventCreatorEntity.get().getParticipant();
+            eventCreatorReputation = creatorEntity.getReputationAsEventCreator();
+        }
+
+        EventCompleteWithCreatorReputationDto eventCompleteWithCreatorDto = this.modelMapper.map(eventEntity,
+                EventCompleteWithCreatorReputationDto.class);
+
+        eventCompleteWithCreatorDto.setEventCreatorReputation(eventCreatorReputation);
+        eventCompleteWithCreatorDto.getEvent().setActivity(eventEntity.getActivity().getName());
+        eventCompleteWithCreatorDto.getEvent().setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+
+        return eventCompleteWithCreatorDto;
     }
 }

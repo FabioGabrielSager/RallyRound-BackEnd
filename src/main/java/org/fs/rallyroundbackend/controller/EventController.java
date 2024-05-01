@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
+import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
-import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/rr/api/v1/events")
@@ -57,7 +59,14 @@ public class EventController {
                     "The dateFrom is equal to or greater than the dateTo");
         }
 
+        // TODO: Add filter to no retrieve the events that was created for the user that is making the request.
+
        return ResponseEntity.ok(this.eventService.getEvents(activity, neighborhood, locality, adminSubdistrict,
                adminDistrict, dateFrom, dateTo, hours, limit, page));
+    }
+
+    @GetMapping("/find/{id}")
+    public ResponseEntity<EventCompleteWithCreatorReputationDto> findEventById(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.eventService.findEventById(id));
     }
 }

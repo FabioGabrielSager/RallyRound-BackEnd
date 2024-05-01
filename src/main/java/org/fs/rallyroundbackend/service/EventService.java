@@ -1,12 +1,15 @@
 package org.fs.rallyroundbackend.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
+import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service interface for managing rally round events.
@@ -19,6 +22,7 @@ public interface EventService {
      * @param eventDto     The DTO representing the event to be created.
      * @param creatorEmail The email address of the user creating the event.
      * @return An {@link EventCompleteDto} object representing the result of the event creation.
+     * @throws EntityNotFoundException if the specified user is not found.
      */
     EventCompleteDto createEvent(EventDto eventDto, String creatorEmail);
 
@@ -40,4 +44,14 @@ public interface EventService {
     EventResumePageResponse getEvents(String activity, String neighborhood, String locality, String adminSubdistrict,
                                       String adminDistrict, LocalDate dateFrom, LocalDate dateTo, List<LocalTime> hours,
                                       Integer limit, Integer page);
+
+    /**
+     * Retrieves the complete information of an event along with the reputation of its creator.
+     *
+     * @param eventId The unique identifier of the event to retrieve.
+     * @return An {@link EventCompleteWithCreatorReputationDto} object containing detailed information about the event
+     *         and the reputation of its creator.
+     * @throws EntityNotFoundException if the specified event is not found.
+     */
+    EventCompleteWithCreatorReputationDto findEventById(UUID eventId);
 }
