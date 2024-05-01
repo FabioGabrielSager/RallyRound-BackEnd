@@ -26,8 +26,12 @@ import java.util.Set;
 public class ParticipantEntity extends UserEntity {
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ParticipantReputation reputation = ParticipantReputation.BUENA;
+    @Column(name = "reputation_as_participant", nullable = false)
+    private ParticipantReputation reputationAsParticipant = ParticipantReputation.BUENA;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reputation_as_event_creator", nullable = false)
+    private ParticipantReputation reputationAsEventCreator = ParticipantReputation.BUENA;
 
     @ManyToOne
     @JoinColumn(name = "place_id")
