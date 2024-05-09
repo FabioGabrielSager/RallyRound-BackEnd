@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
 import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
-import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
+import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.HttpStatus;
@@ -44,7 +44,7 @@ public class EventController {
     }
 
     @GetMapping("/find/")
-    public ResponseEntity<EventResumePageResponse> findAllEvents(
+    public ResponseEntity<EventResumePageDto> findAllEvents(
             @Validated
             @RequestParam(required = false) String activity,
             @RequestParam(required = false) String neighborhood, @RequestParam(required = false) String locality,
@@ -52,21 +52,21 @@ public class EventController {
             @RequestParam(required = false) LocalDate dateFrom, @RequestParam(required = false) LocalDate dateTo,
             @RequestParam(required = false) List<LocalTime> hours,
             @RequestParam(required = false) @Positive Integer limit,
-            @RequestParam(required = false) @Positive Integer page
+            @RequestParam(required = false) @Positive Integer page,
+            HttpServletRequest request
     ) {
         if(dateFrom != null && dateTo != null && (dateFrom.isEqual(dateTo) || dateFrom.isAfter(dateTo))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "The dateFrom is equal to or greater than the dateTo");
         }
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
-        // TODO: Add filter to no retrieve the events that was created for the user that is making the request.
-
-       return ResponseEntity.ok(this.eventService.getEvents(activity, neighborhood, locality, adminSubdistrict,
+       return ResponseEntity.ok(this.eventService.getEvents(userEmail, activity, neighborhood, locality, adminSubdistrict,
                adminDistrict, dateFrom, dateTo, hours, limit, page));
     }
 
     @GetMapping("/find/{id}")
-    public ResponseEntity<EventCompleteWithCreatorReputationDto> findEventById(@PathVariable UUID id) {
+    public ResponseEntity<EventWithCreatorReputationDto> findEventById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.eventService.findEventById(id));
     }
 }
