@@ -12,8 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Setter
 @Getter
-public class EventCompleteDto {
+public class CreatedEventDto {
     protected UUID eventId;
     protected EventDto event;
-    protected List<EventParticipantResponse> eventParticipants;
+    protected List<EventParticipantDto> eventParticipants;
 }

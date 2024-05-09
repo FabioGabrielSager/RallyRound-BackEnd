@@ -3,10 +3,10 @@ package org.fs.rallyroundbackend.service.imps;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
-import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
-import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
+import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
+import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
-import org.fs.rallyroundbackend.dto.event.EventParticipantResponse;
+import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
@@ -55,7 +55,7 @@ public class EventServiceImp implements EventService {
     private final LocationService locationService;
 
     @Override
-    public EventCompleteDto createEvent(EventDto request, String creatorEmail) {
+    public CreatedEventDto createEvent(EventDto request, String creatorEmail) {
         ParticipantEntity creator = participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
                 () -> new EntityNotFoundException("User with email " + creatorEmail + " not found")
         );
@@ -131,8 +131,8 @@ public class EventServiceImp implements EventService {
 
         this.eventRepository.save(eventEntity);
 
-        return new EventCompleteDto(eventEntity.getId(), request,
-                List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantResponse[].class)));
+        return new CreatedEventDto(eventEntity.getId(), request,
+                List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantDto[].class)));
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.fs.rallyroundbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.fs.rallyroundbackend.dto.event.EventParticipantResponse;
+import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
@@ -26,9 +26,9 @@ public class MappersConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        modelMapper.addConverter(new AbstractConverter<EventParticipantEntity, EventParticipantResponse>() {
+        modelMapper.addConverter(new AbstractConverter<EventParticipantEntity, EventParticipantDto>() {
             @Override
-            protected EventParticipantResponse convert(EventParticipantEntity source) {
+            protected EventParticipantDto convert(EventParticipantEntity source) {
                 ParticipantResume participantNameAndProfilePhoto = new
                         ParticipantResume();
                 participantNameAndProfilePhoto.setId(source.getParticipant().getId());
@@ -41,7 +41,7 @@ public class MappersConfig {
                 }
 
 
-                return new EventParticipantResponse(participantNameAndProfilePhoto, source.isEventCreator());
+                return new EventParticipantDto(participantNameAndProfilePhoto, source.isEventCreator());
             }
         });
 

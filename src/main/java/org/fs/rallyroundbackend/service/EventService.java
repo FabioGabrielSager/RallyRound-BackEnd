@@ -1,8 +1,8 @@
 package org.fs.rallyroundbackend.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
-import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
+import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
+import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 
@@ -21,10 +21,10 @@ public interface EventService {
      *
      * @param eventDto     The DTO representing the event to be created.
      * @param creatorEmail The email address of the user creating the event.
-     * @return An {@link EventCompleteDto} object representing the result of the event creation.
+     * @return An {@link CreatedEventDto} object representing the result of the event creation.
      * @throws EntityNotFoundException if the specified user is not found.
      */
-    EventCompleteDto createEvent(EventDto eventDto, String creatorEmail);
+    CreatedEventDto createEvent(EventDto eventDto, String creatorEmail);
 
     /**
      * Retrieves a paginated list of event summaries based on the provided parameters.

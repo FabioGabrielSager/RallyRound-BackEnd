@@ -10,7 +10,7 @@ import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
 @AllArgsConstructor
 @Getter
 @Setter
-public class EventParticipantResponse {
+public class EventParticipantDto {
     private ParticipantResume participant;
     private boolean isEventCreator;
 }

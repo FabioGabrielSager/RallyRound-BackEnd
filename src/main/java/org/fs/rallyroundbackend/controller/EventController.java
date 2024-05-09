@@ -3,8 +3,8 @@ package org.fs.rallyroundbackend.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.dto.event.EventCompleteDto;
-import org.fs.rallyroundbackend.dto.event.EventCompleteWithCreatorReputationDto;
+import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
+import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
 import org.fs.rallyroundbackend.dto.event.EventDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageResponse;
 import org.fs.rallyroundbackend.service.EventService;
@@ -35,8 +35,8 @@ public class EventController {
     private final JwtService jwtService;
 
     @PostMapping("/create/")
-    public ResponseEntity<EventCompleteDto> createEvent(@RequestBody @Validated EventDto eventDto,
-                                                        HttpServletRequest request) {
+    public ResponseEntity<CreatedEventDto> createEvent(@RequestBody @Validated EventDto eventDto,
+                                                       HttpServletRequest request) {
         
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
