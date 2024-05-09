@@ -1,7 +1,9 @@
 package org.fs.rallyroundbackend.config;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.filter.JwtAuthenticationFilter;
+import org.fs.rallyroundbackend.filter.MercadoPagoAccountLinkFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final MercadoPagoAccountLinkFilter mercadoPagoAccountLinkFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
@@ -33,17 +36,26 @@ public class SecurityConfig {
                         csrf.disable())
                 .authorizeHttpRequests(authRequest ->
                         authRequest
+                                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                                 .requestMatchers("/rr/api/v1/auth/participant/validate/jwt").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/auth/participant/**").permitAll()
+
                                 .requestMatchers("/rr/api/v1/activities/matches/{name}").permitAll()
+
                                 .requestMatchers("/rr/api/v1/participant/**").hasRole("PARTICIPANT")
+
                                 .requestMatchers("/rr/api/v1/mp/auth/url/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/mp/auth/account/linked/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/mp/auth/authorize/").permitAll()
+
                                 .requestMatchers("/rr/api/v1/mp/payment/done/").permitAll()
+
                                 .requestMatchers("/rr/api/v1/events/**").hasRole("PARTICIPANT")
+
                                 .requestMatchers("/rr/api/v1/location/autosuggest/places/{query}").permitAll()
-                                .requestMatchers("/rr/api/v1/location/autosuggest/addresses/{query}").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/location/autosuggest/addresses/{query}")
+                                .hasRole("PARTICIPANT")
+
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
@@ -52,8 +64,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(mercadoPagoAccountLinkFilter, JwtAuthenticationFilter.class)
                 .build();
-
-
     }
 
     @Bean
