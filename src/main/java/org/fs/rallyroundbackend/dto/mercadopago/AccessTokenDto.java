@@ -17,7 +17,7 @@ public class AccessTokenDto {
     @JsonProperty("expire_in")
     private int expireIn;
     @JsonProperty("user_id")
-    private int userId;
+    private Long userId;
     @JsonProperty("scope")
     private String scope;
     @JsonProperty("refresh_token")

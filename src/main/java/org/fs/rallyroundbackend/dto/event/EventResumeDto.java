@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.entity.events.DurationUnit;
+import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,4 +48,5 @@ public class EventResumeDto {
     private int participantsLimit;
     @NotNull
     private int participantsCount;
+    private EventInscriptionStatus inscriptionStatus;
 }

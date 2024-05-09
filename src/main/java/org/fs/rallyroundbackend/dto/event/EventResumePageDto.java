@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
-public class EventResumePageResponse {
+public class EventResumePageDto {
     private int page;
     private int pageSize;
     private long totalElements;
