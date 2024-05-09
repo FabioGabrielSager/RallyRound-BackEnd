@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/mp/auth/url/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/mp/auth/account/linked/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/mp/auth/authorize/").permitAll()
+                                .requestMatchers("/rr/api/v1/mp/payment/done/").permitAll()
                                 .requestMatchers("/rr/api/v1/events/**").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/location/autosuggest/places/{query}").permitAll()
                                 .requestMatchers("/rr/api/v1/location/autosuggest/addresses/{query}").hasRole("PARTICIPANT")
