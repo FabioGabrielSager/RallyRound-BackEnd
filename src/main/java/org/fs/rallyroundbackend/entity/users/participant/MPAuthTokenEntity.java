@@ -33,7 +33,7 @@ public class MPAuthTokenEntity {
     @Column(name = "expire_in")
     private int expireIn;
     @Column(name = "user_code")
-    private int userId;
+    private Long userId;
     @Column(name = "scope")
     private String scope;
     @Column(name = "refresh_token")

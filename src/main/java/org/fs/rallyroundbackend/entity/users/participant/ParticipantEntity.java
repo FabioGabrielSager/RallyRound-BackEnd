@@ -58,4 +58,8 @@ public class ParticipantEntity extends UserEntity {
     @OneToMany(mappedBy = "participant")
     @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private Set<ParticipantFavoriteActivitiesEntity> favoriteActivities;
+
+    @OneToMany
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    private List<EventInscriptionEntity> eventInscriptions;
 }
