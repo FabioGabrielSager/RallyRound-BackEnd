@@ -1,6 +1,7 @@
 package org.fs.rallyroundbackend.repository.event;
 
 import org.fs.rallyroundbackend.entity.events.EventEntity;
+import org.fs.rallyroundbackend.entity.events.EventState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,4 +92,6 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             @Param("dateTo") LocalDate dateTo,
             @Param("hours") List<Time> hours
     );
+
+    List<EventEntity> findAllByStateInAndNextStateTransitionBefore(EventState[] states, LocalDateTime dateTime);
 }
