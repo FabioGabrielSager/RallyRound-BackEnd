@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.entity.events.DurationUnit;
+import org.fs.rallyroundbackend.entity.events.EventState;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,4 +49,5 @@ public class EventDto {
     @NotNull
     private boolean eventCreatorIsParticipant;
     private LocalTime eventCreatorSelectedStartHour;
+    private EventState state;
 }

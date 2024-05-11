@@ -37,7 +37,7 @@ public interface EventInscriptionService {
      * @param userEmail The email address of the user making the payment.
      * @return The DTO containing the payment link for the event inscription,
      *         or an empty string if the event inscription is not in the state
-     *         @code INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE}.
+     *         @code INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE.
      */
     EventInscriptionPaymentLinkDto getEventInscriptionPaymentLink(UUID eventId, String userEmail);
 }

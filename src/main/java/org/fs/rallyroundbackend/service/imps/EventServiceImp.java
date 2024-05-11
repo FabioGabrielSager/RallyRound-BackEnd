@@ -15,6 +15,7 @@ import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
+import org.fs.rallyroundbackend.entity.events.EventState;
 import org.fs.rallyroundbackend.entity.events.ScheduleEntity;
 import org.fs.rallyroundbackend.entity.events.ScheduleVoteEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
@@ -140,7 +141,15 @@ public class EventServiceImp implements EventService {
             eventEntity.getEventSchedules().add(eventSchedule);
         }
 
+        eventEntity.setState(EventState.WAITING_FOR_PARTICIPANTS);
+        eventEntity.setNextStateTransition(
+                LocalDateTime.of(request.getDate(),
+                        Arrays.stream(request.getEventSchedules()).max(LocalTime::compareTo).get())
+        );
+
         this.eventRepository.save(eventEntity);
+
+        request.setState(eventEntity.getState());
 
         return new CreatedEventDto(eventEntity.getId(), request,
                 List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantDto[].class)));
@@ -338,6 +347,7 @@ public class EventServiceImp implements EventService {
                             ? eventEntity.getEventParticipants().size()
                             : eventEntity.getEventParticipants().size() - 1)
                     .eventSchedules(this.modelMapper.map(eventEntity.getEventSchedules(), LocalTime[].class))
+                    .state(eventEntity.getState())
                     .build();
 
             if (participantToIncludeId != null) {

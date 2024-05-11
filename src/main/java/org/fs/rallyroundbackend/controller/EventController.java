@@ -40,7 +40,7 @@ public class EventController {
         
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
-        return ResponseEntity.ok(this.eventService.createEvent(eventDto, creatorEmail));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.eventService.createEvent(eventDto, creatorEmail));
     }
 
     @GetMapping("/find/")
