@@ -13,6 +13,7 @@ import org.hibernate.annotations.CascadeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +51,13 @@ public class EventEntity {
 
     @Column(name = "is_event_creator_participant", nullable = false)
     private boolean isEventCreatorParticipant;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EventState state;
+
+    @Column(name = "next_state_transition")
+    private LocalDateTime nextStateTransition;
 
     @ManyToOne
     @JoinColumn(name = "activity_id")
