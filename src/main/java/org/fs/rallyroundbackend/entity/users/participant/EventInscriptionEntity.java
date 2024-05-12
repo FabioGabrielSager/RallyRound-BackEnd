@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter @Setter
 @Builder
 @Entity
-@Table(name = "event_inscription")
+@Table(name = "event_inscriptions")
 public class EventInscriptionEntity {
     @Id
     private UUID id;
