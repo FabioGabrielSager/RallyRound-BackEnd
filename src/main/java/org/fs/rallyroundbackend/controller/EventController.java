@@ -51,6 +51,7 @@ public class EventController {
             @RequestParam(required = false) String adminSubdistrict, @RequestParam(required = false) String adminDistrict,
             @RequestParam(required = false) LocalDate dateFrom, @RequestParam(required = false) LocalDate dateTo,
             @RequestParam(required = false) List<LocalTime> hours,
+            @RequestParam(required = false) boolean showOnlyAvailableEvents,
             @RequestParam(required = false) @Positive Integer limit,
             @RequestParam(required = false) @Positive Integer page,
             HttpServletRequest request
@@ -61,8 +62,8 @@ public class EventController {
         }
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
-       return ResponseEntity.ok(this.eventService.getEvents(userEmail, activity, neighborhood, locality, adminSubdistrict,
-               adminDistrict, dateFrom, dateTo, hours, limit, page));
+        return ResponseEntity.ok(this.eventService.findEvents(userEmail, activity, showOnlyAvailableEvents,
+                neighborhood, locality, adminSubdistrict, adminDistrict, dateFrom, dateTo, hours, limit, page));
     }
 
     @GetMapping("/find/{id}")

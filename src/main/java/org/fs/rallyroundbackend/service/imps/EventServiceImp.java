@@ -156,9 +156,10 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
-    public EventResumePageDto getEvents(String userEmail, String activity, String neighborhood, String locality,
-                                        String adminSubdistrict, String adminDistrict, LocalDate dateFrom,
-                                        LocalDate dateTo, List<LocalTime> hours, Integer limit, Integer page) {
+    public EventResumePageDto findEvents(String userEmail, String activity, boolean showOnlyAvailableEvents,
+                                         String neighborhood, String locality, String adminSubdistrict,
+                                         String adminDistrict, LocalDate dateFrom, LocalDate dateTo,
+                                         List<LocalTime> hours, Integer limit, Integer page) {
 
         ParticipantEntity userThatIsMakingTheRequest = participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(
@@ -166,7 +167,8 @@ public class EventServiceImp implements EventService {
                 );
 
         return this.fetchEventsWithPagination(null, userThatIsMakingTheRequest.getId(),
-                null, activity, neighborhood, locality, adminSubdistrict, adminDistrict,
+                null, showOnlyAvailableEvents ? EventState.WAITING_FOR_PARTICIPANTS : null,
+                activity, neighborhood, locality, adminSubdistrict, adminDistrict,
                 dateFrom, dateTo, hours, limit, page);
     }
 
@@ -181,7 +183,7 @@ public class EventServiceImp implements EventService {
         );
 
         return this.fetchEventsWithPagination(participant.getId(), null,
-                null, activity, neighborhood, locality, adminSubdistrict, adminDistrict,
+                null, null, activity, neighborhood, locality, adminSubdistrict, adminDistrict,
                 dateFrom, dateTo, hours, limit, page);
     }
 
@@ -224,8 +226,9 @@ public class EventServiceImp implements EventService {
                 () -> new EntityNotFoundException("User with email " + participantEmail + " not found.")
         );
 
-        return this.fetchEventsWithPagination(null, null, participant.getId(), activity,
-                neighborhood, locality, adminSubdistrict, adminDistrict, dateFrom, dateTo, hours, limit, page);
+        return this.fetchEventsWithPagination(null, null, participant.getId(),
+                null, activity, neighborhood, locality, adminSubdistrict, adminDistrict, dateFrom,
+                dateTo, hours, limit, page);
     }
 
     @Override
@@ -276,7 +279,7 @@ public class EventServiceImp implements EventService {
     }
 
     private EventResumePageDto fetchEventsWithPagination(
-            UUID creatorId, UUID participantToExcludeId, UUID participantToIncludeId, String activity,
+            UUID creatorId, UUID participantToExcludeId, UUID participantToIncludeId, EventState eventState, String activity,
             String neighborhood, String locality, String adminSubdistrict, String adminDistrict, LocalDate dateFrom,
             LocalDate dateTo, List<LocalTime> hours, Integer limit, Integer page) {
 
@@ -300,11 +303,13 @@ public class EventServiceImp implements EventService {
             notNullPage = 1;
         }
 
+
         List<EventEntity> eventEntities = this.eventRepository
                 .findAll(
                         creatorId,
                         participantToExcludeId,
                         participantToIncludeId,
+                        eventState,
                         activity,
                         neighborhood,
                         locality,
@@ -321,6 +326,7 @@ public class EventServiceImp implements EventService {
                         creatorId,
                         participantToExcludeId,
                         participantToIncludeId,
+                        eventState,
                         activity,
                         neighborhood,
                         locality,

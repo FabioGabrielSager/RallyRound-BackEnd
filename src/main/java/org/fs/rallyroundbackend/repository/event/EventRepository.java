@@ -29,8 +29,9 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             "       AND ep2.participant.id = :excludedParticipantId) AND NOT EXISTS " +
             "   (SELECT 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :excludedParticipantId)) " +
-            "AND :participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
-            "       AND ei.participant.id = :participantId)  " +
+            "AND (:participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
+            "       AND ei.participant.id = :participantId))  " +
+            "AND (:eventState IS NULL OR e.state = :eventState) " +
             "AND (:activityName IS NULL OR act.name LIKE :activityName) " +
             "AND (:neighborhood IS NULL OR neigh.name LIKE :neighborhood)" +
             "AND (:locality IS NULL OR loc.name LIKE :locality)" +
@@ -44,6 +45,7 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             @Param("creatorId") UUID creatorId,
             @Param("excludedParticipantId") UUID excludedParticipantId,
             @Param("participantId") UUID participantId,
+            @Param("eventState") EventState eventState,
             @Param("activityName") String activityName,
             @Param("neighborhood") String neighborhood,
             @Param("locality") String locality,
@@ -71,8 +73,9 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             "   (SELECT 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :excludedParticipantId)) " +
             "AND (:activityName IS NULL OR act.name LIKE :activityName) " +
-            "AND :participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
-            "       AND ei.participant.id = :participantId)  " +
+            "AND (:participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
+            "       AND ei.participant.id = :participantId))  " +
+            "AND (:eventState IS NULL OR e.state = :eventState) " +
             "AND (:neighborhood IS NULL OR neigh.name LIKE :neighborhood)" +
             "AND (:locality IS NULL OR loc.name LIKE :locality)" +
             "AND (:adminSubdistrict IS NULL OR adminsd.name LIKE :adminSubdistrict) " +
@@ -83,6 +86,7 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             @Param("creatorId") UUID creatorId,
             @Param("excludedParticipantId") UUID excludedParticipantId,
             @Param("participantId") UUID participantId,
+            @Param("eventState") EventState eventState,
             @Param("activityName") String activityName,
             @Param("neighborhood") String neighborhood,
             @Param("locality") String locality,

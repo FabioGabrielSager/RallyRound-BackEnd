@@ -35,6 +35,7 @@ public interface EventService {
      *
      * @param userEmail       The email of the user that is making the request.
      * @param activity        The name of the activity associated with the events. Can be {@code null}.
+     * @param showOnlyAvailableEvents A flag indicating whether to show only available events or not.
      * @param neighborhood    The name of the neighborhood where the events take place. Can be {@code null}.
      * @param locality        The name of the locality where the events take place. Can be {@code null}.
      * @param adminSubdistrict The name of the administrative subdistrict where the events take place. Can be {@code null}.
@@ -46,9 +47,9 @@ public interface EventService {
      * @param page            The page number (starting from 1) to retrieve. If {@code null}, the default is one.
      * @return An {@link EventResumePageDto} containing a page of event summaries that match the provided criteria.
      */
-    EventResumePageDto getEvents(String userEmail, String activity, String neighborhood, String locality,
-                                 String adminSubdistrict, String adminDistrict, LocalDate dateFrom,
-                                 LocalDate dateTo, List<LocalTime> hours, Integer limit, Integer page);
+    EventResumePageDto findEvents(String userEmail, String activity, boolean showOnlyAvailableEvents,
+                                  String neighborhood, String locality, String adminSubdistrict, String adminDistrict,
+                                  LocalDate dateFrom, LocalDate dateTo, List<LocalTime> hours, Integer limit, Integer page);
 
     /**
      * Retrieves the complete information of an event along with the reputation of its creator.
