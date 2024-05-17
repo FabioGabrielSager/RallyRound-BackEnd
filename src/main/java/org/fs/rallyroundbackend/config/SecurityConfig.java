@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.config;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.fs.rallyroundbackend.filter.ChatFilter;
 import org.fs.rallyroundbackend.filter.JwtAuthenticationFilter;
 import org.fs.rallyroundbackend.filter.MercadoPagoAccountLinkFilter;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final MercadoPagoAccountLinkFilter mercadoPagoAccountLinkFilter;
+    private final ChatFilter eventChatFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
@@ -67,6 +69,7 @@ public class SecurityConfig {
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(mercadoPagoAccountLinkFilter, JwtAuthenticationFilter.class)
+                .addFilterAfter(eventChatFilter, JwtAuthenticationFilter.class)
                 .build();
     }
 

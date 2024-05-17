@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.config;
 
+import org.fs.rallyroundbackend.filter.ChatFilter;
 import org.fs.rallyroundbackend.filter.JwtAuthenticationFilter;
 import org.fs.rallyroundbackend.filter.MercadoPagoAccountLinkFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -35,6 +36,18 @@ public class FiltersConfig {
     mercadoPagoAccountLinkFilterRegistrationBean(MercadoPagoAccountLinkFilter mercadoPagoAccountLinkFilter) {
         FilterRegistrationBean<MercadoPagoAccountLinkFilter> filterRegistrationBean =
                 new FilterRegistrationBean<>(mercadoPagoAccountLinkFilter);
+        filterRegistrationBean.setEnabled(false);
+        return filterRegistrationBean;
+    }
+
+    /**
+     * Creates a FilterRegistrationBean for ChatFilter but marks it as disabled by default.
+     * This means the filter won't be registered in the Spring Boot's Embedded Servlet Container.
+     */
+    @Bean
+    public FilterRegistrationBean<ChatFilter> chatFilterRegistrationBean(ChatFilter chatFilter) {
+        FilterRegistrationBean<ChatFilter> filterRegistrationBean =
+                new FilterRegistrationBean<>(chatFilter);
         filterRegistrationBean.setEnabled(false);
         return filterRegistrationBean;
     }
