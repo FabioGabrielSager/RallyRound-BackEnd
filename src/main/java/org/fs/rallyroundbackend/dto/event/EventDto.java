@@ -19,6 +19,7 @@ import org.fs.rallyroundbackend.entity.events.EventState;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -50,4 +51,7 @@ public class EventDto {
     private boolean eventCreatorIsParticipant;
     private LocalTime eventCreatorSelectedStartHour;
     private EventState state;
+    // TODO: The following value (chatId) shouldn't be included in all event details request,
+    //  it should only be included in requests coming from the participants of the requested event.
+    private UUID chatId;
 }

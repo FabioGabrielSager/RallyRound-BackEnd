@@ -11,6 +11,8 @@ import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.event.EventWithInscriptionStatusDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
+import org.fs.rallyroundbackend.entity.chats.ChatType;
+import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
@@ -141,6 +143,15 @@ public class EventServiceImp implements EventService {
             eventEntity.getEventSchedules().add(eventSchedule);
         }
 
+        // Creating and adding event chat
+        EventChatEntity eventChatEntity = EventChatEntity.builder()
+                .chatType(ChatType.EVENT_CHAT)
+                .event(eventEntity)
+                .build();
+
+        eventEntity.setChat(eventChatEntity);
+
+        // Init event state
         eventEntity.setState(EventState.WAITING_FOR_PARTICIPANTS);
         eventEntity.setNextStateTransition(
                 LocalDateTime.of(request.getDate(),
@@ -150,6 +161,7 @@ public class EventServiceImp implements EventService {
         this.eventRepository.save(eventEntity);
 
         request.setState(eventEntity.getState());
+        request.setChatId(eventChatEntity.getChatId());
 
         return new CreatedEventDto(eventEntity.getId(), request,
                 List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantDto[].class)));
@@ -210,6 +222,9 @@ public class EventServiceImp implements EventService {
         eventCompleteWithCreatorDto.setEventCreatorReputation(eventCreatorReputation);
         eventCompleteWithCreatorDto.getEvent().setActivity(eventEntity.getActivity().getName());
         eventCompleteWithCreatorDto.getEvent().setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+        // TODO: The following value (chatId) shouldn't be included in all event details request,
+        //  it should only be included in requests coming from the participants of the requested event.
+        eventCompleteWithCreatorDto.getEvent().setChatId(eventEntity.getChat().getChatId());
 
         return eventCompleteWithCreatorDto;
     }
@@ -274,6 +289,9 @@ public class EventServiceImp implements EventService {
         response.getEvent().setActivity(eventEntity.getActivity().getName());
         response.getEvent().setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
         response.setEventInscriptionStatus(eventInscription.getStatus());
+        // TODO: The following value (chatId) shouldn't be included in all event details request,
+        //  it should only be included in requests coming from the participants of the requested event.
+        response.getEvent().setChatId(eventEntity.getChat().getChatId());
 
         return response;
     }
