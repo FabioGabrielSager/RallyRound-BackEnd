@@ -8,26 +8,31 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "chat_messages")
+@AllArgsConstructor @NoArgsConstructor
+@Getter @Setter
+@Builder
 public class ChatMessageEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "chat_id")
-    private ChatEntity chat;
-
     @Column(length = 300)
-    private String content;
+    private String message;
 
-    private LocalDateTime timestamp;
+    private ZonedDateTime timestamp;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")

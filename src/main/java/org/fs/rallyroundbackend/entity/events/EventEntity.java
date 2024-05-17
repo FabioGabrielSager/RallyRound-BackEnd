@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.fs.rallyroundbackend.entity.chats.ChatEntity;
+import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -77,5 +77,6 @@ public class EventEntity {
     private List<EventParticipantEntity> eventParticipants;
 
     @OneToOne(mappedBy = "event")
-    private ChatEntity chat;
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    private EventChatEntity chat;
 }

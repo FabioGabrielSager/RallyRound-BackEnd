@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import org.fs.rallyroundbackend.entity.chats.ChatEntity;
 import org.fs.rallyroundbackend.entity.chats.ChatMessageEntity;
+import org.fs.rallyroundbackend.entity.chats.PrivateChatEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
@@ -50,7 +50,7 @@ public class ParticipantEntity extends UserEntity {
     private List<EventParticipantEntity> eventParticipants;
 
     @ManyToMany
-    private List<ChatEntity> chats;
+    private List<PrivateChatEntity> chats;
 
     @OneToMany(mappedBy = "sender")
     private List<ChatMessageEntity> sentMessages;
