@@ -56,6 +56,10 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/location/autosuggest/addresses/{query}")
                                 .hasRole("PARTICIPANT")
 
+                                .requestMatchers("/rr/api/v1/chats/**").hasRole("PARTICIPANT")
+                                .requestMatchers("/chat").permitAll()
+                                .requestMatchers("/notification").permitAll()
+
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
