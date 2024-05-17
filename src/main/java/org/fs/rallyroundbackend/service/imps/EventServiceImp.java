@@ -3,13 +3,12 @@ package org.fs.rallyroundbackend.service.imps;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
-import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
-import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
-import org.fs.rallyroundbackend.dto.event.EventDto;
-import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
+import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventResponse;
+import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
+import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.event.EventWithInscriptionStatusDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.entity.chats.ChatType;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
@@ -38,6 +37,7 @@ import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -45,7 +45,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,7 +69,8 @@ public class EventServiceImp implements EventService {
     private final EventInscriptionRepository eventInscriptionRepository;
 
     @Override
-    public CreatedEventDto createEvent(EventDto request, String creatorEmail) {
+    @Transactional
+    public EventResponseForEventCreators createEvent(CreateEventRequest request, String creatorEmail) {
         ParticipantEntity creator = participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
                 () -> new EntityNotFoundException("User with email " + creatorEmail + " not found")
         );
@@ -160,11 +163,21 @@ public class EventServiceImp implements EventService {
 
         this.eventRepository.save(eventEntity);
 
-        request.setState(eventEntity.getState());
-        request.setChatId(eventChatEntity.getChatId());
+        EventResponseForEventCreators eventResponse =
+                this.modelMapper.map(eventEntity, EventResponseForEventCreators.class);
+        eventResponse.setChatId(eventChatEntity.getChatId());
+        eventResponse.setEventCreatorReputation(creator.getReputationAsEventCreator());
+        eventResponse.setActivity(eventEntity.getActivity().getName());
+        eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+        if(eventEntity.isEventCreatorParticipant()) {
+            eventResponse.setSelectedStartingHour(request.getEventCreatorSelectedStartHour());
+            if(eventEntity.getEventSchedules().size() > 1) {
+                eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
+                        eventEntity.getEventParticipants()));
+            }
+        }
 
-        return new CreatedEventDto(eventEntity.getId(), request,
-                List.of(this.modelMapper.map(eventEntity.getEventParticipants(), EventParticipantDto[].class)));
+        return eventResponse;
     }
 
     @Override
@@ -200,7 +213,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
-    public EventWithCreatorReputationDto findEventById(UUID eventId) {
+    public EventResponse findEventById(UUID eventId) {
         EventEntity eventEntity = this.eventRepository.findById(eventId).orElseThrow(
                 () -> new EntityNotFoundException("event not found")
         );
@@ -216,17 +229,72 @@ public class EventServiceImp implements EventService {
             eventCreatorReputation = creatorEntity.getReputationAsEventCreator();
         }
 
-        EventWithCreatorReputationDto eventCompleteWithCreatorDto = this.modelMapper.map(eventEntity,
-                EventWithCreatorReputationDto.class);
+        EventResponse eventResponse =
+                this.modelMapper.map(eventEntity, EventResponse.class);
+        eventResponse.setEventCreatorReputation(eventCreatorReputation);
+        eventResponse.setActivity(eventEntity.getActivity().getName());
+        eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+        if(eventEntity.getEventSchedules().size() > 1) {
+            eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
+                    eventEntity.getEventParticipants()));
+        }
 
-        eventCompleteWithCreatorDto.setEventCreatorReputation(eventCreatorReputation);
-        eventCompleteWithCreatorDto.getEvent().setActivity(eventEntity.getActivity().getName());
-        eventCompleteWithCreatorDto.getEvent().setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
-        // TODO: The following value (chatId) shouldn't be included in all event details request,
-        //  it should only be included in requests coming from the participants of the requested event.
-        eventCompleteWithCreatorDto.getEvent().setChatId(eventEntity.getChat().getChatId());
+        return eventResponse;
+    }
 
-        return eventCompleteWithCreatorDto;
+    @Override
+    public EventResponseForEventCreators findParticipantCreatedEventById(String userEmail, UUID eventId) {
+        this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("User with email " + userEmail + " not found.")
+                );
+
+        EventEntity eventEntity = this.eventRepository.findById(eventId).orElseThrow(
+                () -> new EntityNotFoundException("event not found")
+        );
+
+        Optional<EventParticipantEntity> eventCreatorEntityOptional = eventEntity.getEventParticipants()
+                .stream()
+                .filter(ep -> ep.isEventCreator())
+                .findFirst();
+
+        if (eventCreatorEntityOptional.isEmpty()) {
+            throw new MissingEventCreatorException();
+        }
+
+        EventParticipantEntity eventCreator = eventCreatorEntityOptional.get();
+        ParticipantEntity creatorEntity = eventCreator.getParticipant();
+
+        if (!creatorEntity.getEmail().equals(userEmail)) {
+            throw new ParticipantNotInscribedException("The given user is not the creator of the given event");
+        }
+
+        EventResponseForEventCreators eventResponse =
+                this.modelMapper.map(eventEntity, EventResponseForEventCreators.class);
+        eventResponse.setChatId(eventEntity.getChat().getChatId());
+        eventResponse.setEventCreatorReputation(creatorEntity.getReputationAsEventCreator());
+        eventResponse.setActivity(eventEntity.getActivity().getName());
+        eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+
+        if(eventEntity.isEventCreatorParticipant()) {
+            Optional<EventParticipantEntity> creatorEventParticipant = creatorEntity.getEventParticipants()
+                    .stream()
+                    .filter(ep -> ep.getEvent().getId() == eventEntity.getId())
+                    .findFirst();
+
+            creatorEventParticipant.ifPresent(eventParticipantEntity -> eventResponse
+                    .setSelectedStartingHour(eventParticipantEntity
+                            .getScheduleVote()
+                            .getSelectedHour()
+                            .toLocalTime()));
+        }
+
+        if(eventEntity.getEventSchedules().size() > 1) {
+            eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
+                    eventEntity.getEventParticipants()));
+        }
+
+        return eventResponse;
     }
 
     @Override
@@ -247,7 +315,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
-    public EventWithInscriptionStatusDto findParticipantSignedEventById(String userEmail, UUID eventId) {
+    public EventResponseForParticipants findParticipantSignedEventById(String userEmail, UUID eventId) {
         ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(
                         () -> new EntityNotFoundException("User with email " + userEmail + " not found.")
@@ -280,20 +348,33 @@ public class EventServiceImp implements EventService {
         }
 
         EventInscriptionEntity eventInscription = eventInscriptionOptional.get();
-        ParticipantReputation eventCreatorReputation = creatorEntity.getReputationAsEventCreator();
 
-        EventWithInscriptionStatusDto response = this.modelMapper.map(eventEntity,
-                EventWithInscriptionStatusDto.class);
+        EventResponseForParticipants eventResponse =
+                this.modelMapper.map(eventEntity, EventResponseForParticipants.class);
 
-        response.setEventCreatorReputation(eventCreatorReputation);
-        response.getEvent().setActivity(eventEntity.getActivity().getName());
-        response.getEvent().setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
-        response.setEventInscriptionStatus(eventInscription.getStatus());
-        // TODO: The following value (chatId) shouldn't be included in all event details request,
-        //  it should only be included in requests coming from the participants of the requested event.
-        response.getEvent().setChatId(eventEntity.getChat().getChatId());
+        eventResponse.setEventInscriptionStatus(eventInscription.getStatus());
+        eventResponse.setChatId(eventEntity.getChat().getChatId());
+        eventResponse.setEventCreatorReputation(creatorEntity.getReputationAsEventCreator());
+        eventResponse.setActivity(eventEntity.getActivity().getName());
+        eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
 
-        return response;
+        Optional<EventParticipantEntity> eventParticipant = participant.getEventParticipants()
+                .stream()
+                .filter(ep -> ep.getEvent().getId() == eventEntity.getId())
+                .findFirst();
+
+        eventParticipant.ifPresent(eventParticipantEntity -> eventResponse
+                .setSelectedStartingHour(eventParticipantEntity
+                        .getScheduleVote()
+                        .getSelectedHour()
+                        .toLocalTime()));
+
+        if(eventEntity.getEventSchedules().size() > 1) {
+            eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
+                    eventEntity.getEventParticipants()));
+        }
+
+        return eventResponse;
     }
 
     private EventResumePageDto fetchEventsWithPagination(
@@ -385,5 +466,27 @@ public class EventServiceImp implements EventService {
         }
 
         return new EventResumePageDto(notNullPage, notNullLimit, totalElements, eventResumeResponses);
+    }
+
+    private Map<LocalTime, Integer> countVotesForStartingHour(List<EventSchedulesEntity> eventSchedulesEntities,
+                                                              List<EventParticipantEntity> eventParticipantEntities) {
+        HashMap<LocalTime, Integer> computedVotes = new HashMap<>();
+
+        for (EventSchedulesEntity eventSchedules : eventSchedulesEntities) {
+            Time startingHour = eventSchedules.getSchedule().getStartingHour();
+            computedVotes.put(startingHour.toLocalTime(), 0);
+
+            Integer selectedTimes =
+                    eventParticipantEntities
+                            .stream()
+                            .filter(ep -> ep.getScheduleVote() != null
+                                    && ep.getScheduleVote().getSelectedHour().equals(startingHour))
+                            .toList()
+                            .size();
+
+            computedVotes.put(startingHour.toLocalTime(), selectedTimes);
+        }
+
+        return computedVotes;
     }
 }

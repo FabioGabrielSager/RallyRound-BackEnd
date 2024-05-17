@@ -6,8 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.CreatedEventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.EventInscriptionPaymentLinkDto;
 import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
+import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.event.EventWithInscriptionStatusDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
@@ -111,10 +112,18 @@ public class ParticipantController {
     }
 
     @GetMapping("/events/{id}/enrolled/")
-    public ResponseEntity<EventWithInscriptionStatusDto> findParticipantSignedEventById(@PathVariable UUID id,
-                                                                                        HttpServletRequest request) {
+    public ResponseEntity<EventResponseForParticipants> findParticipantSignedEventById(@PathVariable UUID id,
+                                                                                       HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.eventService.findParticipantSignedEventById(userEmail, id));
+    }
+
+    @GetMapping("/events/{id}/created/")
+    public ResponseEntity<EventResponseForEventCreators> findParticipantCreatedEventById(@PathVariable UUID id,
+                                                                                         HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.eventService.findParticipantCreatedEventById(userEmail, id));
     }
 }

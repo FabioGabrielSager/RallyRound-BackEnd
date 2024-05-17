@@ -3,9 +3,9 @@ package org.fs.rallyroundbackend.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
-import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
-import org.fs.rallyroundbackend.dto.event.EventDto;
+import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventResponse;
+import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
@@ -35,8 +35,8 @@ public class EventController {
     private final JwtService jwtService;
 
     @PostMapping("/create/")
-    public ResponseEntity<CreatedEventDto> createEvent(@RequestBody @Validated EventDto eventDto,
-                                                       HttpServletRequest request) {
+    public ResponseEntity<EventResponseForEventCreators> createEvent(@RequestBody @Validated CreateEventRequest eventDto,
+                                                                     HttpServletRequest request) {
         
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
@@ -67,7 +67,7 @@ public class EventController {
     }
 
     @GetMapping("/find/{id}")
-    public ResponseEntity<EventWithCreatorReputationDto> findEventById(@PathVariable UUID id) {
+    public ResponseEntity<EventResponse> findEventById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.eventService.findEventById(id));
     }
 }

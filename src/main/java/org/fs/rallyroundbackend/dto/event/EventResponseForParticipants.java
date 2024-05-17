@@ -10,6 +10,6 @@ import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 @NoArgsConstructor
 @Setter
 @Getter
-public class EventWithInscriptionStatusDto extends EventWithCreatorReputationDto {
+public class EventResponseForParticipants extends EventResponseForEventCreators {
     private EventInscriptionStatus eventInscriptionStatus;
 }

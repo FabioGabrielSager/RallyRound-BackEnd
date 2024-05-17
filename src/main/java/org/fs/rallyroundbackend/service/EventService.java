@@ -1,11 +1,11 @@
 package org.fs.rallyroundbackend.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.fs.rallyroundbackend.dto.event.CreatedEventDto;
-import org.fs.rallyroundbackend.dto.event.EventWithCreatorReputationDto;
-import org.fs.rallyroundbackend.dto.event.EventDto;
+import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventResponse;
+import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
+import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.event.EventWithInscriptionStatusDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 
@@ -25,10 +25,10 @@ public interface EventService {
      *
      * @param eventDto     The DTO representing the event to be created.
      * @param creatorEmail The email address of the user creating the event.
-     * @return An {@link CreatedEventDto} object representing the result of the event creation.
+     * @return An {@link EventResponse} object representing the result of the event creation.
      * @throws EntityNotFoundException if the specified user is not found.
      */
-    CreatedEventDto createEvent(EventDto eventDto, String creatorEmail);
+    EventResponseForEventCreators createEvent(CreateEventRequest eventDto, String creatorEmail);
 
     /**
      * Retrieves a paginated list of event summaries based on the provided parameters.
@@ -55,11 +55,21 @@ public interface EventService {
      * Retrieves the complete information of an event along with the reputation of its creator.
      *
      * @param eventId The unique identifier of the event to retrieve.
-     * @return An {@link EventWithCreatorReputationDto} object containing detailed information about the event
+     * @return An {@link EventResponse} object containing detailed information about the event
      *         and the reputation of its creator.
      * @throws EntityNotFoundException if the specified event is not found.
      */
-    EventWithCreatorReputationDto findEventById(UUID eventId);
+    EventResponse findEventById(UUID eventId);
+
+    /**
+     * Retrieves the complete information of an event along with the reputation of its creator.
+     *
+     * @param eventId The unique identifier of the event to retrieve.
+     * @return An {@link EventResponseForEventCreators} object containing detailed information about the event
+     *         and the reputation of its creator.
+     * @throws EntityNotFoundException if the specified event is not found.
+     */
+    EventResponseForEventCreators findParticipantCreatedEventById(String userEmail, UUID eventId);
 
     /**
      * Retrieves the events created by a specific user based on the provided parameters.
@@ -116,8 +126,8 @@ public interface EventService {
      *
      * @param userEmail The email address of the participant whose inscription status is to be retrieved.
      * @param eventId   The unique identifier of the event for which the inscription status is to be retrieved.
-     * @return An {@link EventWithInscriptionStatusDto} object containing detailed information about the event
+     * @return An {@link EventResponseForParticipants} object containing detailed information about the event
      *         and the inscription status of the specified participant.
      */
-    EventWithInscriptionStatusDto findParticipantSignedEventById(String userEmail, UUID eventId);
+    EventResponseForParticipants findParticipantSignedEventById(String userEmail, UUID eventId);
 }

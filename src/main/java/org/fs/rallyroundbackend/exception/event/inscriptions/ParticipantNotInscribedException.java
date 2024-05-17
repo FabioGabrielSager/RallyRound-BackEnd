@@ -6,4 +6,8 @@ public class ParticipantNotInscribedException extends RallyRoundApiException {
     public ParticipantNotInscribedException() {
         super("The given user is not participant of the given event");
     }
+
+    public ParticipantNotInscribedException(String message) {
+        super(message);
+    }
 }

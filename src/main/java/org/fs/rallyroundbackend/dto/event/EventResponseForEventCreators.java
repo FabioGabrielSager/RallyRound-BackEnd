@@ -5,15 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class CreatedEventDto {
-    protected UUID eventId;
-    protected EventDto event;
-    protected List<EventParticipantDto> eventParticipants;
+public class EventResponseForEventCreators extends EventResponse {
+    protected LocalTime selectedStartingHour;
+    private UUID chatId;
 }

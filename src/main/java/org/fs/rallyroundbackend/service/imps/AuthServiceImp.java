@@ -115,8 +115,11 @@ public class AuthServiceImp implements AuthService {
         );
 
         // Validating the place
+        String bingMapQuery = request.getPlace().getAddress().getAddressLine() == null
+                ? request.getPlace().getAddress().getFormattedAddress()
+                : request.getPlace().getAddress().getAddressLine();
         PlaceDto[] bingMapApiAutosuggestionResponse =
-                this.bingMapApiClient.getAutosuggestionByPlace(request.getPlace().getAddress().getAddressLine()).block();
+                this.bingMapApiClient.getAutosuggestionByPlace(bingMapQuery).block();
 
         Optional<PlaceDto> filteredPlace = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
                 .filter(p -> p.equals(request.getPlace())).findFirst();
