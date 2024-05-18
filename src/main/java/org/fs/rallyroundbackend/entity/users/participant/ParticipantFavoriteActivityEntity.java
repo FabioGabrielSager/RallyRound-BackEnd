@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 @NoArgsConstructor
 @Builder
 @Table(name = "participant_favorite_activities")
-public class ParticipantFavoriteActivitiesEntity implements Comparable<ParticipantFavoriteActivitiesEntity> {
+public class ParticipantFavoriteActivityEntity implements Comparable<ParticipantFavoriteActivityEntity> {
 
     @Id
     @ManyToOne
@@ -38,7 +38,7 @@ public class ParticipantFavoriteActivitiesEntity implements Comparable<Participa
     private int favoriteOrder;
 
     @Override
-    public int compareTo(@NotNull ParticipantFavoriteActivitiesEntity o) {
+    public int compareTo(@NotNull ParticipantFavoriteActivityEntity o) {
         return Integer.compare(this.favoriteOrder, o.getFavoriteOrder());
     }
 }
