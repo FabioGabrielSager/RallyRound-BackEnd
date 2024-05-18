@@ -27,11 +27,11 @@ public class ParticipantEntity extends UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reputation_as_participant", nullable = false)
-    private ParticipantReputation reputationAsParticipant = ParticipantReputation.BUENA;
+    private ParticipantReputation reputationAsParticipant = ParticipantReputation.GOOD;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reputation_as_event_creator", nullable = false)
-    private ParticipantReputation reputationAsEventCreator = ParticipantReputation.BUENA;
+    private ParticipantReputation reputationAsEventCreator = ParticipantReputation.GOOD;
 
     @ManyToOne
     @JoinColumn(name = "place_id")
@@ -57,7 +57,7 @@ public class ParticipantEntity extends UserEntity {
 
     @OneToMany(mappedBy = "participant")
     @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
-    private Set<ParticipantFavoriteActivitiesEntity> favoriteActivities;
+    private Set<ParticipantFavoriteActivityEntity> favoriteActivities;
 
     @OneToMany
     @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })

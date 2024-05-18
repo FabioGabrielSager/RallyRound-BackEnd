@@ -19,7 +19,7 @@ values ('a1b1488c-b222-4a01-b88e-7dc7ce7a58f8', 'mock', 'mocked', 'mockUser@emai
 insert into users_roles (user_id, role_id) values ('a1b1488c-b222-4a01-b88e-7dc7ce7a58f8', 2);
 
 insert into participants(id, reputation_as_participant, reputation_as_event_creator)
-values ( 'a1b1488c-b222-4a01-b88e-7dc7ce7a58f8', 'BUENA', 'BUENA' );
+values ( 'a1b1488c-b222-4a01-b88e-7dc7ce7a58f8', 'GOOD', 'GOOD' );
 
 -- Mocked participant user with liked mercado pago account. Password=mockpass
 insert into users (id, name, last_name, email, birthdate, password, account_non_expired,
@@ -32,7 +32,7 @@ values ('51ef4c13-ccbc-4054-904b-6f70e436f7d5', 'mpuser', 'mpuser', 'mpuser@emai
 insert into users_roles (user_id, role_id) values ('51ef4c13-ccbc-4054-904b-6f70e436f7d5', 2);
 
 insert into participants(id, reputation_as_participant, reputation_as_event_creator)
-values ( '51ef4c13-ccbc-4054-904b-6f70e436f7d5', 'BUENA' , 'BUENA' );
+values ( '51ef4c13-ccbc-4054-904b-6f70e436f7d5', 'GOOD' , 'GOOD' );
 
 insert into mp_auth_tokens(id, access_token, token_type, expire_in, user_code, scope, refresh_token, public_key)
 values ('51ef4c13-ccbc-4054-904b-6f70e436f7d5',
