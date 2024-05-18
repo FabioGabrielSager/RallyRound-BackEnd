@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class ParticipantFavoriteActivityRequest {
+public class ParticipantFavoriteActivityDto {
     @NotBlank
     private String name;
     @NotNull

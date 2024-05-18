@@ -7,7 +7,7 @@ import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.auth.AuthResponse;
 import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
-import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityRequest;
+import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
@@ -16,7 +16,7 @@ import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
-import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivitiesEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
@@ -88,6 +88,7 @@ public class AuthServiceImp implements AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .username(userEntity.getName())
+                .privateChatId(userEntity.getId())
                 .build();
     }
 
@@ -145,15 +146,15 @@ public class AuthServiceImp implements AuthService {
         }
 
         // Map the new participant favorite activities.
-        TreeSet<ParticipantFavoriteActivitiesEntity> participantFavoriteActivitiesEntities = new TreeSet<>();
+        TreeSet<ParticipantFavoriteActivityEntity> participantFavoriteActivitiesEntities = new TreeSet<>();
 
-        for (ParticipantFavoriteActivityRequest fa : request.getFavoritesActivities()) {
+        for (ParticipantFavoriteActivityDto fa : request.getFavoritesActivities()) {
 
             Optional<ActivityEntity> activityEntityOptional =
                     this.activityRepository.findByName(fa.getName());
 
-            ParticipantFavoriteActivitiesEntity participantFavoriteActivitiesEntity =
-                    ParticipantFavoriteActivitiesEntity.builder()
+            ParticipantFavoriteActivityEntity participantFavoriteActivitiesEntity =
+                    ParticipantFavoriteActivityEntity.builder()
                             .participant(participantEntity)
                             .favoriteOrder(fa.getOrder())
                             .build();
@@ -219,7 +220,11 @@ public class AuthServiceImp implements AuthService {
         this.userRepository.save(user);
         this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
 
-        return AuthResponse.builder().token(jwtService.getToken(user)).username(user.getName()).build();
+        return AuthResponse.builder()
+                .token(jwtService.getToken(user))
+                .username(user.getName())
+                .privateChatId(user.getId())
+                .build();
     }
 
     @Override

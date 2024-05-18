@@ -16,5 +16,5 @@ public class ParticipantRegistrationRequest extends RegisterRequest {
     @NotNull
     private PlaceDto place;
     @NotNull
-    private ParticipantFavoriteActivityRequest[] favoritesActivities;
+    private ParticipantFavoriteActivityDto[] favoritesActivities;
 }
