@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
@@ -10,6 +11,7 @@ import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.EntityType;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
@@ -53,7 +55,6 @@ public class MappersConfig {
         });
 
         modelMapper.addConverter(new AbstractConverter<AddressEntity, AddressDto>() {
-
             @Override
             protected AddressDto convert(AddressEntity source) {
                 return AddressDto.builder()
@@ -92,6 +93,14 @@ public class MappersConfig {
                                         ? source.getFormattedAddress().getFormattedAddress() : "")
                                 .build())
                         .build();
+            }
+        });
+
+        modelMapper.addConverter(new AbstractConverter<ParticipantFavoriteActivityEntity,
+                ParticipantFavoriteActivityDto>() {
+            @Override
+            protected ParticipantFavoriteActivityDto convert(ParticipantFavoriteActivityEntity source) {
+                return new ParticipantFavoriteActivityDto(source.getActivity().getName(), source.getFavoriteOrder());
             }
         });
 

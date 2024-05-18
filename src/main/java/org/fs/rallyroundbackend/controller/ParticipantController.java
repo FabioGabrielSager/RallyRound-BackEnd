@@ -9,11 +9,13 @@ import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
+import org.fs.rallyroundbackend.service.ParticipantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +39,7 @@ import java.util.UUID;
 public class ParticipantController {
     private final EventInscriptionService eventInscriptionService;
     private final EventService eventService;
+    private final ParticipantService participantService;
     private final JwtService jwtService;
 
     @PostMapping("/events/{eventId}/inscriptions/create")
@@ -125,5 +128,10 @@ public class ParticipantController {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.eventService.findParticipantCreatedEventById(userEmail, id));
+    }
+
+    @GetMapping("public/{userId}")
+    public ResponseEntity<UserPublicDataDto> getUserPublicData(@PathVariable UUID userId) {
+        return ResponseEntity.ok(participantService.getParticipantPublicData(userId));
     }
 }
