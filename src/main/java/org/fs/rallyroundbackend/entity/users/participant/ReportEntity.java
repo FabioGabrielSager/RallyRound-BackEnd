@@ -1,19 +1,11 @@
 package org.fs.rallyroundbackend.entity.users.participant;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.fs.rallyroundbackend.entity.users.UserEntity;
 
 import java.util.UUID;
 
@@ -22,6 +14,7 @@ import java.util.UUID;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ReportEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -32,7 +25,12 @@ public class ReportEntity {
     @Enumerated(EnumType.STRING)
     private ReportMotive motive;
 
+    @Column(name = "as_event_creator")
+    private boolean asEventCreator;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private UserEntity userEntity;
+    private ParticipantEntity reportedParticipant;
+
+    private UUID reporterId;
 }

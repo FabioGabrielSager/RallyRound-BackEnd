@@ -9,9 +9,12 @@ import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.participant.ReportRequest;
+import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
@@ -23,9 +26,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,8 +67,7 @@ public class ParticipantController {
 
     @GetMapping("/events/{eventId}/inscriptions/paymentlink")
     public ResponseEntity<EventInscriptionPaymentLinkDto> retrieveInscriptionPaymentLink(@PathVariable UUID eventId,
-                                                                                         HttpServletRequest request)
-    {
+                                                                                         HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
         return ResponseEntity.ok(this.eventInscriptionService.getEventInscriptionPaymentLink(eventId, userEmail));
     }
@@ -133,5 +137,22 @@ public class ParticipantController {
     @GetMapping("public/{userId}")
     public ResponseEntity<UserPublicDataDto> getUserPublicData(@PathVariable UUID userId) {
         return ResponseEntity.ok(participantService.getParticipantPublicData(userId));
+    }
+
+    @PostMapping("report/")
+    public ResponseEntity<ReportResponse> registerParticipantReport(@RequestBody ReportRequest reportRequest,
+                                                                    HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        ReportResponse reportResponse;
+        try {
+            reportResponse = this.participantService.registerParticipantReport(reportRequest, userEmail);
+        } catch (ReportsLimitException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(reportResponse);
     }
 }

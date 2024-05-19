@@ -40,7 +40,8 @@ public class ParticipantEntity extends UserEntity {
     @OneToOne
     private MPAuthTokenEntity mpAuthToken;
 
-    @OneToMany
+    @OneToMany(mappedBy = "reportedParticipant")
+    @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private List<ReportEntity> reports;
 
     @Column(name = "profile_photo", columnDefinition = "bytea")

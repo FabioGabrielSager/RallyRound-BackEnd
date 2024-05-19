@@ -1,5 +1,7 @@
 package org.fs.rallyroundbackend.service;
 
+import org.fs.rallyroundbackend.dto.participant.ReportRequest;
+import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 
 import java.util.UUID;
@@ -16,4 +18,13 @@ public interface ParticipantService {
      * @return UserPublicDataDto containing the public data of the participant
      */
     UserPublicDataDto getParticipantPublicData(UUID userId);
+
+    /**
+     * Registers a report against a participant.
+     *
+     * @param reportRequest the report request containing details of the report
+     * @param reporterEmail the email of the user reporting the participant
+     * @return ReportResponse containing the details of the registered report
+     */
+    ReportResponse registerParticipantReport(ReportRequest reportRequest, String reporterEmail);
 }
