@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
@@ -115,5 +116,24 @@ public class ParticipantServiceImp implements ParticipantService {
                 .reportedUserId(reportedParticipant.getId())
                 .asEventCreator(reportRequest.isAsEventCreator())
                 .build();
+    }
+
+    @Override
+    public UserPersonalDataDto getPersonalData(String userEmail) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Participant with email " + userEmail + " not found"));
+
+        UserPersonalDataDto result = this.modelMapper.map(participant, UserPersonalDataDto.class);
+
+        result.setDeletedAccount(false);
+
+        if (participant.getProfilePhoto() != null) {
+            String participantEncodedProfilePhoto = Base64.getEncoder().encodeToString(participant.getProfilePhoto());
+            result.setProfilePhoto(participantEncodedProfilePhoto);
+        }
+
+        return result;
     }
 }

@@ -11,6 +11,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
@@ -137,6 +138,16 @@ public class ParticipantController {
     @GetMapping("public/{userId}")
     public ResponseEntity<UserPublicDataDto> getUserPublicData(@PathVariable UUID userId) {
         return ResponseEntity.ok(participantService.getParticipantPublicData(userId));
+    }
+
+    @GetMapping("personal/")
+    public ResponseEntity<UserPersonalDataDto> getUserPersonalData(HttpServletRequest request) {
+        // TODO: I think that this endpoint is unsafe because an attacker can change
+        //  its JWT username to access to the personal data of another user.
+        //  Check for a better protection mechanism.
+
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+        return ResponseEntity.ok(participantService.getPersonalData(userEmail));
     }
 
     @PostMapping("report/")

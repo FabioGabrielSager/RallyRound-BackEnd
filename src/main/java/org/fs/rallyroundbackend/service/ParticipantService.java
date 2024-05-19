@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.service;
 
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 
 import java.util.UUID;
@@ -27,4 +28,12 @@ public interface ParticipantService {
      * @return ReportResponse containing the details of the registered report
      */
     ReportResponse registerParticipantReport(ReportRequest reportRequest, String reporterEmail);
+
+    /**
+     * Retrieves the personal data of a participant by their email.
+     *
+     * @param userEmail the email of the participant
+     * @return UserPersonalDataDto containing the personal data of the participant
+     */
+    UserPersonalDataDto getPersonalData(String userEmail);
 }

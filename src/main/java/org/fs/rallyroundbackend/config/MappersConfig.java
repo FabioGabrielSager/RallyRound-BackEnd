@@ -6,11 +6,14 @@ import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.EntityType;
+import org.fs.rallyroundbackend.entity.location.PlaceEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Conditions;
@@ -82,6 +85,43 @@ public class MappersConfig {
                                         source.getStreet().getNeighborhood().getLocality()
                                                 .getAdminSubdistrict().getAdminDistrict().getName() != null
                                                 ? source.getStreet().getNeighborhood().getLocality()
+                                                        .getAdminSubdistrict().getAdminDistrict().getName() : "")
+
+                                .postalCode(source.getPostalCode() != null ? source.getPostalCode() : "")
+
+                                .addressLine(source.getAddressLine().getAddressLine() != null
+                                        ? source.getAddressLine().getAddressLine() : "")
+
+                                .formattedAddress(source.getFormattedAddress().getFormattedAddress() != null
+                                        ? source.getFormattedAddress().getFormattedAddress() : "")
+                                .build())
+                        .build();
+            }
+        });
+
+        modelMapper.addConverter(new AbstractConverter<PlaceEntity, PlaceDto>() {
+            @Override
+            protected PlaceDto convert(PlaceEntity source) {
+                return PlaceDto.builder()
+                        .entityType(EntityType.Place)
+                        .address(PlaceAddressDto.builder()
+                                .countryRegion("Argentina")
+                                .neighborhood(source.getNeighborhood()!= null
+                                        ? source.getNeighborhood().getName() : "")
+
+                                .locality(source.getNeighborhood().getLocality().getName() != null
+                                        ? source.getNeighborhood().getLocality().getName() : "")
+
+                                .adminDistrict2(
+                                        source.getNeighborhood().getLocality()
+                                                .getAdminSubdistrict().getName() != null
+                                                ? source.getNeighborhood().getLocality()
+                                                        .getAdminSubdistrict().getName() : "")
+
+                                .adminDistrict(
+                                        source.getNeighborhood().getLocality()
+                                                .getAdminSubdistrict().getAdminDistrict().getName() != null
+                                                ? source.getNeighborhood().getLocality()
                                                         .getAdminSubdistrict().getAdminDistrict().getName() : "")
 
                                 .postalCode(source.getPostalCode() != null ? source.getPostalCode() : "")
