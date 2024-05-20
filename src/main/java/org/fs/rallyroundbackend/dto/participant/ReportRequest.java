@@ -1,5 +1,7 @@
 package org.fs.rallyroundbackend.dto.participant;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,9 +15,13 @@ import java.util.UUID;
 @Getter
 @SuperBuilder
 public class ReportRequest {
+    @NotNull
     protected UUID reportedUserId;
+    @NotNull
     protected ReportMotive reportMotive;
+    @NotBlank
     protected String description;
     // field to indicate if the report is for the user as event creator or as event participant
+    @NotNull
     protected boolean asEventCreator;
 }

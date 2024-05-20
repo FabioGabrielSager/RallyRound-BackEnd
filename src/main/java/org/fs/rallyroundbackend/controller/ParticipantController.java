@@ -151,7 +151,7 @@ public class ParticipantController {
     }
 
     @PostMapping("report/")
-    public ResponseEntity<ReportResponse> registerParticipantReport(@RequestBody ReportRequest reportRequest,
+    public ResponseEntity<ReportResponse> registerParticipantReport(@RequestBody @Validated ReportRequest reportRequest,
                                                                     HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
