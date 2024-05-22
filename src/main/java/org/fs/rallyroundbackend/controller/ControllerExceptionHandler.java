@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.AccessDeniedException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
@@ -56,6 +57,14 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(this.buildError(
                 ex.getMessage(),
                 HttpStatus.BAD_REQUEST)
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorApi> handleException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(this.buildError(
+                ex.getMessage(),
+                HttpStatus.FORBIDDEN)
         );
     }
 

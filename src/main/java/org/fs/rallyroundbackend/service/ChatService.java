@@ -1,8 +1,10 @@
 package org.fs.rallyroundbackend.service;
 
 import org.fs.rallyroundbackend.dto.chat.ChatMessagesResponse;
-import org.fs.rallyroundbackend.dto.chat.MessageRequest;
+import org.fs.rallyroundbackend.dto.chat.ToChatMessageRequest;
+import org.fs.rallyroundbackend.dto.chat.ToUserMessageRequest;
 
+import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 
 /**
@@ -16,15 +18,19 @@ public interface ChatService {
      * @param userEmail The email address of the user retrieving the chat messages.
      * @param chatId    The ID of the chat for which to retrieve messages.
      * @return The response containing the chat messages.
+     * @throws AccessDeniedException If the user is not a participant of the chat.
      */
-    ChatMessagesResponse getChatMessages(String userEmail, UUID chatId);
+    ChatMessagesResponse getChatMessages(String userEmail, UUID chatId) throws AccessDeniedException;
 
     /**
      * Processes a message sent by the user.
      *
-     * @param userEmail The email address of the user sending the message.
+     * @param senderEmail The email address of the user sending the message.
      * @param message   The request containing the message to be processed.
      * @return The request after being processed.
+     * @throws AccessDeniedException If the user is not a participant of the chat
+     * or if the chat is in a finalized or canceled state.
      */
-    MessageRequest processMessage(String userEmail, MessageRequest message);
+    ToChatMessageRequest processToEventMessage(String senderEmail, ToChatMessageRequest message)
+            throws AccessDeniedException;
 }

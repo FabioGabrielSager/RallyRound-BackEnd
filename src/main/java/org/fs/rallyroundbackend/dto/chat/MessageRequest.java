@@ -14,7 +14,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class MessageRequest {
-    private UUID chatId;
     private UUID messageId;
     private String message;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
