@@ -1,9 +1,11 @@
 package org.fs.rallyroundbackend.service;
 
+import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -36,4 +38,15 @@ public interface ParticipantService {
      * @return UserPersonalDataDto containing the personal data of the participant
      */
     UserPersonalDataDto getPersonalData(String userEmail);
+
+    /**
+     * Modifies the account information of a participant.
+     *
+     * @param userEmail the email of the participant whose account is to be modified
+     * @param request the request containing the details for modifying the participant's account
+     * @param profilePhoto the new profile photo to be uploaded for the participant
+     * @return UserPersonalDataDto containing the updated personal data of the participant
+     */
+    UserPersonalDataDto modifyParticipantAccount(String userEmail, ParticipantAccountModificationRequest request,
+                                  MultipartFile profilePhoto);
 }

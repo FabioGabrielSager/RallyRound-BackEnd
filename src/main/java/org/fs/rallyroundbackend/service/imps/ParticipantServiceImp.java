@@ -2,23 +2,42 @@ package org.fs.rallyroundbackend.service.imps;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
+import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
+import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.entity.users.participant.ReportEntity;
+import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
+import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
+import org.fs.rallyroundbackend.repository.ActivityRepository;
+import org.fs.rallyroundbackend.repository.user.FavoriteActivityRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.service.LocationService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /**
@@ -29,6 +48,18 @@ import java.util.UUID;
 public class ParticipantServiceImp implements ParticipantService {
     private final ModelMapper modelMapper;
     private final ParticipantRepository participantRepository;
+    private final BingMapApiClient bingMapApiClient;
+    private final LocationService locationService;
+    private final ActivityRepository activityRepository;
+
+
+
+    private final ReportRepository reportRepository;
+    private final PrivateChatRepository privateChatRepository;
+    private final MPAuthTokenRepository mpAuthTokenRepository;
+    private final EventInscriptionRepository eventInscriptionRepository;
+    private final FavoriteActivityRepository favoriteActivityRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserPublicDataDto getParticipantPublicData(UUID userId) {
@@ -136,4 +167,103 @@ public class ParticipantServiceImp implements ParticipantService {
 
         return result;
     }
+
+    @Override
+    @Transactional
+    public UserPersonalDataDto modifyParticipantAccount(String userEmail, ParticipantAccountModificationRequest request,
+                                         MultipartFile profilePhoto) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Participant with email " + userEmail + " not found"));
+
+        if(request.getPlace() != null) {
+            // Validating the place
+            String bingMapQuery = request.getPlace().getAddress().getAddressLine() == null
+                    ? request.getPlace().getAddress().getFormattedAddress()
+                    : request.getPlace().getAddress().getAddressLine();
+
+            PlaceDto[] bingMapApiAutosuggestionResponse =
+                    this.bingMapApiClient.getAutosuggestionByPlace(bingMapQuery).block();
+
+            Optional<PlaceDto> filteredPlace = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
+                    .filter(p -> p.equals(request.getPlace())).findFirst();
+
+            if(filteredPlace.isEmpty()) {
+                throw new InvalidPlaceException();
+            }
+
+            participant.setPlace(this.locationService.getPlaceEntityFromPlaceDto(request.getPlace()));
+        }
+
+        // If the user provides a profile photo, compress and set it to the ParticipantEntity.
+        if (profilePhoto != null) {
+            try {
+                participant.setProfilePhoto(profilePhoto.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if(request.getName() != null && !request.getName().isEmpty())
+            participant.setName(request.getName());
+        if(request.getLastName() != null && !request.getLastName().isEmpty())
+            participant.setLastName(request.getLastName());
+        if(request.getBirthdate() != null) {
+            // Validate minimum age
+            // Calculate the age based on the birthdate
+            LocalDate currentDate = LocalDate.now();
+            Period period = Period.between(request.getBirthdate(), currentDate);
+            int age = period.getYears();
+            if(age < 18) {
+                throw new AgeValidationException("Person must be at least 18 years old.");
+            }
+            participant.setBirthdate(request.getBirthdate());
+        }
+
+        if(request.getFavoritesActivities() != null && request.getFavoritesActivities().length > 1) {
+            // Map the new participant favorite activities.
+            TreeSet<ParticipantFavoriteActivityEntity> participantFavoriteActivitiesEntities = new TreeSet<>();
+
+            for (ParticipantFavoriteActivityDto fa : request.getFavoritesActivities()) {
+
+                Optional<ActivityEntity> activityEntityOptional =
+                        this.activityRepository.findByName(fa.getName());
+
+                ParticipantFavoriteActivityEntity participantFavoriteActivitiesEntity =
+                        ParticipantFavoriteActivityEntity.builder()
+                                .participant(participant)
+                                .favoriteOrder(fa.getOrder())
+                                .build();
+
+                if (activityEntityOptional.isEmpty()) {
+                    ActivityEntity savedActivity =
+                            this.activityRepository.save(ActivityEntity.builder().name(fa.getName()).build());
+
+                    participantFavoriteActivitiesEntity.setActivity(savedActivity);
+                } else {
+                    participantFavoriteActivitiesEntity.setActivity(activityEntityOptional.get());
+                }
+
+                participantFavoriteActivitiesEntities.add(participantFavoriteActivitiesEntity);
+            }
+
+            // Set participant favorite activities
+            participant.setFavoriteActivities(participantFavoriteActivitiesEntities);
+        }
+
+        this.participantRepository.save(participant);
+
+        UserPersonalDataDto result = this.modelMapper.map(participant, UserPersonalDataDto.class);
+
+        result.setDeletedAccount(false);
+
+        if (participant.getProfilePhoto() != null) {
+            String participantEncodedProfilePhoto = Base64.getEncoder().encodeToString(participant.getProfilePhoto());
+            result.setProfilePhoto(participantEncodedProfilePhoto);
+        }
+
+        return result;
+    }
+
 }

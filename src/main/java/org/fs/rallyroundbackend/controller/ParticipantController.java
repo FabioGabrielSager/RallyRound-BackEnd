@@ -9,6 +9,7 @@ import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
@@ -21,6 +22,7 @@ import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -47,6 +51,7 @@ public class ParticipantController {
     private final EventService eventService;
     private final ParticipantService participantService;
     private final JwtService jwtService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping("/events/{eventId}/inscriptions/create")
     public ResponseEntity<CreatedEventInscriptionResultDto> createEventInscription(@PathVariable UUID eventId,
@@ -142,10 +147,6 @@ public class ParticipantController {
 
     @GetMapping("personal/")
     public ResponseEntity<UserPersonalDataDto> getUserPersonalData(HttpServletRequest request) {
-        // TODO: I think that this endpoint is unsafe because an attacker can change
-        //  its JWT username to access to the personal data of another user.
-        //  Check for a better protection mechanism.
-
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
         return ResponseEntity.ok(participantService.getPersonalData(userEmail));
     }
@@ -165,5 +166,20 @@ public class ParticipantController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(reportResponse);
+    }
+
+    @PutMapping(value = "modify/",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserPersonalDataDto> modifyParticipantAccount(
+            @RequestPart String participantData,
+            @RequestParam(required = false) MultipartFile profilePhoto,
+            HttpServletRequest request) throws JsonProcessingException {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        ParticipantAccountModificationRequest modificationRequest = this.objectMapper.readValue(participantData,
+                ParticipantAccountModificationRequest.class);
+
+        return ResponseEntity
+                .ok(this.participantService.modifyParticipantAccount(userEmail, modificationRequest, profilePhoto));
     }
 }
