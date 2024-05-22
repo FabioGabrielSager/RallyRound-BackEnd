@@ -1,5 +1,7 @@
 package org.fs.rallyroundbackend.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
 import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.EventService;
@@ -25,14 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -181,5 +176,19 @@ public class ParticipantController {
 
         return ResponseEntity
                 .ok(this.participantService.modifyParticipantAccount(userEmail, modificationRequest, profilePhoto));
+    }
+
+    @DeleteMapping("delete/")
+    public ResponseEntity<String> deleteParticipantAccount(@RequestParam String password,
+                                                           HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        try {
+            this.participantService.deleteParticipantAccount(userEmail, password);
+        } catch (IncorrectPasswordException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

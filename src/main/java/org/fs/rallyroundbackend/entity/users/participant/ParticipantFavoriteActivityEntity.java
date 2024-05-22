@@ -2,6 +2,8 @@ package org.fs.rallyroundbackend.entity.users.participant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,6 +18,8 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 @Entity
 @Getter @Setter
 @AllArgsConstructor
@@ -23,12 +27,14 @@ import org.jetbrains.annotations.NotNull;
 @Builder
 @Table(name = "participant_favorite_activities")
 public class ParticipantFavoriteActivityEntity implements Comparable<ParticipantFavoriteActivityEntity> {
-
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
     @ManyToOne
     @JoinColumn(name = "participant_id")
     private ParticipantEntity participant;
-    @Id
+
     @ManyToOne
     @JoinColumn(name = "activity_id")
     @Cascade({CascadeType.PERSIST, CascadeType.MERGE})

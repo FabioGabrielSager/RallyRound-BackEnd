@@ -49,4 +49,12 @@ public interface ParticipantService {
      */
     UserPersonalDataDto modifyParticipantAccount(String userEmail, ParticipantAccountModificationRequest request,
                                   MultipartFile profilePhoto);
+
+    /**
+     * Deletes a participant's account.
+     *
+     * @param userEmail the email of the participant whose account is to be deleted
+     * @param password the password of the participant to verify their identity
+     */
+    void deleteParticipantAccount(String userEmail, String password);
 }

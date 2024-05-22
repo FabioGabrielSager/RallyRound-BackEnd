@@ -11,19 +11,27 @@ import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
+import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
+import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.entity.users.participant.ReportEntity;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
+import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
 import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
+import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
+import org.fs.rallyroundbackend.repository.chat.PrivateChatRepository;
+import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.user.FavoriteActivityRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.ReportRepository;
 import org.fs.rallyroundbackend.service.LocationService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -266,4 +274,53 @@ public class ParticipantServiceImp implements ParticipantService {
         return result;
     }
 
+    @Override
+    @Transactional
+    public void deleteParticipantAccount(String userEmail, String password) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Participant with email " + userEmail + " not found"));
+
+        if(!this.passwordEncoder.matches(password, participant.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+
+        if (participant.getReports() != null && !participant.getReports().isEmpty()) {
+            this.reportRepository.deleteAll(participant.getReports());
+            participant.getReports().clear(); // Clear references
+        }
+
+        if (participant.getChats() != null && !participant.getChats().isEmpty()) {
+            this.privateChatRepository.deleteAll(participant.getChats());
+            participant.getChats().clear(); // Clear references
+        }
+        if (participant.getMpAuthToken() != null) {
+            this.mpAuthTokenRepository.delete(participant.getMpAuthToken());
+            participant.setMpAuthToken(null); // Prevent re-attaching deleted entity
+        }
+
+        if (participant.getFavoriteActivities() != null && !participant.getFavoriteActivities().isEmpty()) {
+            this.favoriteActivityRepository.deleteAll(participant.getFavoriteActivities());
+            participant.getFavoriteActivities().clear(); // Clear references
+        }
+
+        if(participant.getEventInscriptions() != null) {
+            for(EventInscriptionEntity inscriptionEntity : participant.getEventInscriptions()) {
+                if(inscriptionEntity.getStatus() != EventInscriptionStatus.ACCEPTED) {
+                    this.eventInscriptionRepository.delete(inscriptionEntity);
+                }
+            }
+        }
+
+        participant.setPlace(null);
+        participant.setProfilePhoto(null);
+        participant.setLastName(null);
+        participant.setEmail(null);
+        participant.setBirthdate(null);
+        participant.setPassword(null);
+        participant.setEnabled(false);
+
+        this.participantRepository.save(participant);
+    }
 }
