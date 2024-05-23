@@ -1,8 +1,8 @@
 package org.fs.rallyroundbackend.service;
 
-import org.fs.rallyroundbackend.dto.event.CreatedEventInscriptionResultDto;
-import org.fs.rallyroundbackend.dto.event.EventInscriptionPaymentLinkDto;
-import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.event.inscription.CreatedEventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionPaymentLinkDto;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
 
 import java.time.LocalTime;
 import java.util.UUID;

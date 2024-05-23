@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.dto.event;
+package org.fs.rallyroundbackend.dto.event.inscription;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -2,9 +2,9 @@ package org.fs.rallyroundbackend.service.imps;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.dto.event.CreatedEventInscriptionResultDto;
-import org.fs.rallyroundbackend.dto.event.EventInscriptionPaymentLinkDto;
-import org.fs.rallyroundbackend.dto.event.EventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.event.inscription.CreatedEventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionPaymentLinkDto;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
