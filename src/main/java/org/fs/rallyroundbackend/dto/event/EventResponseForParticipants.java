@@ -12,4 +12,5 @@ import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 @Getter
 public class EventResponseForParticipants extends EventResponseForEventCreators {
     private EventInscriptionStatus eventInscriptionStatus;
+    private boolean hasAlreadySentEventFeedback;
 }

@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
@@ -69,5 +71,15 @@ public class EventController {
     @GetMapping("/find/{id}")
     public ResponseEntity<EventResponse> findEventById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.eventService.findEventById(id));
+    }
+
+    @PostMapping("/feedback/")
+    public ResponseEntity<EventFeedbackResponse> submitFeedback(@RequestBody
+                                                                    @Validated EventFeedbackRequest feedbackRequest,
+                                                                HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        EventFeedbackResponse response = this.eventService.submitFeedback(feedbackRequest, userEmail);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

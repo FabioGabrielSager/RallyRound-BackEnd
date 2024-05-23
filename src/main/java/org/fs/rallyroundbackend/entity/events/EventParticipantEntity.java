@@ -46,4 +46,8 @@ public class EventParticipantEntity {
     @OneToOne(mappedBy = "eventParticipant")
     @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
     private ScheduleVoteEntity scheduleVote;
+
+    @OneToOne
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    private EventFeedbackEntity feedback;
 }

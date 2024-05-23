@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
@@ -14,6 +16,7 @@ import org.fs.rallyroundbackend.entity.chats.ChatType;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
+import org.fs.rallyroundbackend.entity.events.EventFeedbackEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.events.EventState;
@@ -24,18 +27,22 @@ import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
+import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
 import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
+import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.ParticipantNotInscribedException;
 import org.fs.rallyroundbackend.exception.location.InvalidAddressException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
+import org.fs.rallyroundbackend.repository.event.EventParticipantRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +74,7 @@ public class EventServiceImp implements EventService {
     private final BingMapApiClient bingMapApiClient;
     private final LocationService locationService;
     private final EventInscriptionRepository eventInscriptionRepository;
+    private final EventParticipantRepository eventParticipantRepository;
 
     @Override
     @Transactional
@@ -363,11 +371,16 @@ public class EventServiceImp implements EventService {
                 .filter(ep -> ep.getEvent().getId() == eventEntity.getId())
                 .findFirst();
 
-        eventParticipant.ifPresent(eventParticipantEntity -> eventResponse
-                .setSelectedStartingHour(eventParticipantEntity
-                        .getScheduleVote()
-                        .getSelectedHour()
-                        .toLocalTime()));
+        eventParticipant.ifPresent(eventParticipantEntity -> {
+            eventResponse
+                    .setSelectedStartingHour(eventParticipantEntity
+                            .getScheduleVote()
+                            .getSelectedHour()
+                            .toLocalTime());
+            if(eventEntity.getState() == EventState.FINALIZED) {
+                eventResponse.setHasAlreadySentEventFeedback(eventParticipantEntity.getFeedback() != null);
+            }
+        });
 
         if(eventEntity.getEventSchedules().size() > 1) {
             eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
@@ -375,6 +388,44 @@ public class EventServiceImp implements EventService {
         }
 
         return eventResponse;
+    }
+
+    @Override
+    @Transactional
+    public EventFeedbackResponse submitFeedback(EventFeedbackRequest feedbackRequest, String userEmail) {
+        EventEntity event = this.eventRepository.findById(feedbackRequest.getEventId())
+                .orElseThrow(() -> new EntityNotFoundException("Event not found."));
+
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
+
+        EventParticipantEntity eventParticipantEntity = this.eventParticipantRepository
+                .findByParticipantIdAndEventId(participant.getId(), event.getId())
+                .orElseThrow(() -> new AccessDeniedException("User did not participate in this event."));
+
+        if (!event.getState().equals(EventState.FINALIZED)) {
+            throw new EventStateException("Cannot provide feedback for non-finalized events.");
+        }
+
+        if(eventParticipantEntity.isEventCreator()) {
+            throw new AccessDeniedException("The event creator can not give feedback about their own event.");
+        }
+
+        if(eventParticipantEntity.getFeedback() != null) {
+            throw new EventFeedbackAlreadyProvidedException();
+        }
+
+        EventFeedbackEntity feedbackEntity = this.modelMapper.map(feedbackRequest, EventFeedbackEntity.class);
+
+        feedbackEntity.setId(null);
+        feedbackEntity.setEventParticipant(eventParticipantEntity);
+
+        eventParticipantEntity.setFeedback(feedbackEntity);
+
+        this.eventParticipantRepository.save(eventParticipantEntity);
+
+        return new EventFeedbackResponse(eventParticipantEntity.getFeedback().getId(),
+                "Feedback submitted successfully");
     }
 
     private EventResumePageDto fetchEventsWithPagination(

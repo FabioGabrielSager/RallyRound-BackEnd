@@ -2,12 +2,17 @@ package org.fs.rallyroundbackend.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
+import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -130,4 +135,19 @@ public interface EventService {
      *         and the inscription status of the specified participant.
      */
     EventResponseForParticipants findParticipantSignedEventById(String userEmail, UUID eventId);
+
+    /**
+     * Submits feedback for a finalized event by a participant.
+     *
+     * @param feedbackRequest The request containing the feedback details.
+     * @param userEmail The email address of the participant submitting the feedback.
+     * @return EventFeedbackResponse containing the details of the submitted feedback.
+     * @throws EntityNotFoundException if the event or participant is not found.
+     * @throws AccessDeniedException if the user did not participate in the event or if the event creator
+     * attempts to submit feedback.
+     * @throws EventStateException if the event is not finalized.
+     * @throws EventFeedbackAlreadyProvidedException if feedback has already been provided for the event
+     * xby the given user.
+     */
+    EventFeedbackResponse submitFeedback(EventFeedbackRequest feedbackRequest, String userEmail);
 }

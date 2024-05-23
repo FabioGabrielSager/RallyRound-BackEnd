@@ -8,11 +8,11 @@ import org.fs.rallyroundbackend.exception.common.RallyRoundApiException;
 import org.fs.rallyroundbackend.exception.event.InconsistentEventException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.file.AccessDeniedException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
