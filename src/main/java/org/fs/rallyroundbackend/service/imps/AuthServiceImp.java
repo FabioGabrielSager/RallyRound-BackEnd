@@ -2,7 +2,7 @@ package org.fs.rallyroundbackend.service.imps;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.auth.AuthResponse;
 import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
@@ -12,6 +12,7 @@ import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
+import org.fs.rallyroundbackend.entity.users.PrivilegeEntity;
 import org.fs.rallyroundbackend.entity.users.RoleEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EmailVerificationTokenEntity;
@@ -20,16 +21,18 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActi
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
-import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
+import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
-import org.fs.rallyroundbackend.repository.user.EmailVerificationTokenRepository;
 import org.fs.rallyroundbackend.repository.user.RoleRepository;
 import org.fs.rallyroundbackend.repository.user.UserRepository;
+import org.fs.rallyroundbackend.repository.user.participant.EmailVerificationTokenRepository;
 import org.fs.rallyroundbackend.service.AuthService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.fs.rallyroundbackend.service.LocationService;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,53 +45,73 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * {@link AuthService} implementation for authentication-related operations.
  */
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthServiceImp implements AuthService {
 
-    private UserRepository userRepository;
-    private ActivityRepository activityRepository;
-    private BingMapApiClient bingMapApiClient;
-    private RoleRepository roleRepository;
-    private EmailVerificationTokenRepository emailVerificationTokenRepository;
-    private JwtService jwtService;
-    private PasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final ActivityRepository activityRepository;
+    private final BingMapApiClient bingMapApiClient;
+    private final RoleRepository roleRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     private ModelMapper modelMapper;
-    private ApplicationEventPublisher applicationEventPublisher;
-    private LocationService locationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final LocationService locationService;
+    @Value("${spring.security.user.roles.prefix}")
+    private String SPRING_SECURITY_ROLE_PREFIX;
 
+    @Autowired
     public void setModelMapper(@NonNull ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
     @Override
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
         ));
 
-        UserEntity userEntity = userRepository.findEnabledUserByEmail(request.getUsername())
+        UserEntity user = userRepository.findEnabledUserByEmail(request.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
 
-        String token = jwtService.getToken(userEntity);
+        String token = jwtService.getToken(user);
+
+        Set<String> userPrivileges = new HashSet<>();
+
+        for(PrivilegeEntity p : user.getPrivileges()) {
+            userPrivileges.add(p.getCategory().getName());
+            userPrivileges.add(p.getName());
+        }
+
+        user.setLastLoginTime(LocalDateTime.now());
+
+        this.userRepository.save(user);
 
         return AuthResponse.builder()
                 .token(token)
-                .username(userEntity.getName())
-                .privateChatId(userEntity.getId())
+                .username(user.getName())
+                .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
+                        .collect(Collectors.toSet()))
+                .privileges(userPrivileges.stream().toList())
                 .build();
     }
 
@@ -217,12 +240,16 @@ public class AuthServiceImp implements AuthService {
         }
 
         user.setEnabled(true);
+        user.setLastLoginTime(LocalDateTime.now());
+        user.setRegistrationDate(LocalDateTime.now());
         this.userRepository.save(user);
         this.emailVerificationTokenRepository.delete(emailVerificationTokenEntity);
 
         return AuthResponse.builder()
                 .token(jwtService.getToken(user))
                 .username(user.getName())
+                .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
+                        .collect(Collectors.toSet()))
                 .privateChatId(user.getId())
                 .build();
     }
