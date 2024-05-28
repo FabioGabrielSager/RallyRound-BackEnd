@@ -14,6 +14,7 @@ import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.EntityType;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.users.DepartmentEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Conditions;
@@ -141,6 +142,13 @@ public class MappersConfig {
             @Override
             protected ParticipantFavoriteActivityDto convert(ParticipantFavoriteActivityEntity source) {
                 return new ParticipantFavoriteActivityDto(source.getActivity().getName(), source.getFavoriteOrder());
+            }
+        });
+
+        modelMapper.addConverter(new AbstractConverter<DepartmentEntity, String>() {
+            @Override
+            protected String convert(DepartmentEntity source) {
+                return source.getName();
             }
         });
 
