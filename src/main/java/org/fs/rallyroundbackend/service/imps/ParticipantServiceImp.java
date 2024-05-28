@@ -25,9 +25,6 @@ import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
 import org.fs.rallyroundbackend.repository.chat.PrivateChatRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
-import org.fs.rallyroundbackend.repository.user.FavoriteActivityRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
-import org.fs.rallyroundbackend.repository.user.ReportRepository;
 import org.fs.rallyroundbackend.repository.user.participant.FavoriteActivityRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ReportRepository;
@@ -78,10 +75,9 @@ public class ParticipantServiceImp implements ParticipantService {
                 this.participantRepository.findById(userId)
                         .orElseThrow(() -> new EntityNotFoundException("Participant with id " + userId + " not found"));
 
-        // TODO: Add logic to check if the requested logic was deleted.
         UserPublicDataDto result = this.modelMapper.map(participantEntity, UserPublicDataDto.class);
 
-        result.setDeletedAccount(false);
+        result.setDeletedAccount(!participantEntity.isEnabled());
 
         if (participantEntity.getProfilePhoto() != null) {
             String participantEncodedProfilePhoto = Base64.getEncoder().encodeToString(participantEntity.getProfilePhoto());
