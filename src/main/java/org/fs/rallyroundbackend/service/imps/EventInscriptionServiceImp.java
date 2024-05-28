@@ -18,7 +18,7 @@ import org.fs.rallyroundbackend.exception.event.inscriptions.EventInscriptionSta
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.MPPaymentService;
 import org.springframework.stereotype.Service;

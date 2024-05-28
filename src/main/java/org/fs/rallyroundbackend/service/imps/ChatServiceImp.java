@@ -15,7 +15,7 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.repository.chat.ChatRepository;
 import org.fs.rallyroundbackend.repository.chat.EventChatRepository;
 import org.fs.rallyroundbackend.repository.chat.PrivateChatRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.ChatService;
 import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

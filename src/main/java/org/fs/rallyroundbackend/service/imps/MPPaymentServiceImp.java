@@ -27,7 +27,7 @@ import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.MPPaymentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

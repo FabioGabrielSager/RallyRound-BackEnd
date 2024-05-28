@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.repository.user;
+package org.fs.rallyroundbackend.repository.user.participant;
 
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

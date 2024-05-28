@@ -9,7 +9,7 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccessTokenRequestException;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccountAlreadyLinkedException;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.MPAuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

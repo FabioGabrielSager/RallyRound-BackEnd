@@ -38,7 +38,7 @@ import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventParticipantRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
 import org.modelmapper.ModelMapper;

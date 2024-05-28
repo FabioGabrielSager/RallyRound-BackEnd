@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class MercadoPagoAccountLinkFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final ParticipantRepository userRepository;
-    private final AntPathRequestMatcher uriMatcher = new AntPathRequestMatcher("/rr/api/v1/events/create/");
+    private static final AntPathRequestMatcher URI_MATCHER = new AntPathRequestMatcher("/rr/api/v1/events/create/");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -37,7 +37,7 @@ public class MercadoPagoAccountLinkFilter extends OncePerRequestFilter {
 
             Optional<ParticipantEntity> participantEntityOptional = this.userRepository.findEnabledUserByEmail(username);
 
-            if(participantEntityOptional.isPresent() &&
+            if (participantEntityOptional.isPresent() &&
                     participantEntityOptional.get().getMpAuthToken() != null
                     && participantEntityOptional.get().getMpAuthToken().isACompleteToken()) {
                 filterChain.doFilter(request, response);
@@ -54,6 +54,6 @@ public class MercadoPagoAccountLinkFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return !this.uriMatcher.matches(request);
+        return !URI_MATCHER.matches(request);
     }
 }

@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.repository.user;
+package org.fs.rallyroundbackend.repository.user.participant;
 
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +12,7 @@ import java.util.UUID;
 public interface ParticipantRepository extends JpaRepository<ParticipantEntity, UUID> {
     @Query("SELECT p FROM ParticipantEntity AS p WHERE p.email = :email AND p.enabled = true")
     Optional<ParticipantEntity> findEnabledUserByEmail(String email);
+
+    @Query("SELECT p FROM ParticipantEntity AS p WHERE p.id = :id AND p.enabled = true")
+    Optional<ParticipantEntity> findEnabledUserById(UUID id);
 }
