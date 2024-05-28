@@ -34,7 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping(value = "/participant/login")
+    @PostMapping(value = "/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
@@ -74,5 +74,4 @@ public class AuthController {
     public ResponseEntity<Boolean> validateJwtToken() {
         return ResponseEntity.ok(true);
     }
-
 }
