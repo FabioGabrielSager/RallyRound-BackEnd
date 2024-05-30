@@ -56,6 +56,8 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/admin/find/").hasAuthority("READ_ADMINS")
                                 .requestMatchers("/rr/api/v1/admin/find/{adminId}").hasAuthority("READ_ADMINS")
 
+                                .requestMatchers("/rr/api/v1/departments").hasRole("ADMIN")
+
                                 .requestMatchers("/rr/api/v1/activities/matches/{name}").permitAll()
 
                                 .requestMatchers("/rr/api/v1/participant/**").hasRole("PARTICIPANT")
