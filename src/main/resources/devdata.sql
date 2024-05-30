@@ -58,12 +58,14 @@ update participants set mp_auth_token_id='51ef4c13-ccbc-4054-904b-6f70e436f7d5'
                     where id='51ef4c13-ccbc-4054-904b-6f70e436f7d5';
 
 -- Departments
-insert into departments (name) values ( 'Desarrollo');
+insert into departments (name) values ( 'Desarrollo' );
+insert into departments (name) values ( 'Recursos humanos' );
+insert into departments (name) values ( 'Dirección' );
 -- Admin account.
-insert into users (id, name, last_name, email, birthdate, password, account_non_expired,
+insert into users (id, name, last_name, email, birthdate, password, registration_date, account_non_expired,
                    credentials_non_expired, account_non_locked, enabled)
 values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', 'Fabio', 'Sager', 'fabio@email.com', '2001-10-31',
-        '$2a$10$En1BgDKDvO8vMZIGiILWSeOavYiuxqTVjqdDfehyaLpJwDIbwOZye',
+        '$2a$10$En1BgDKDvO8vMZIGiILWSeOavYiuxqTVjqdDfehyaLpJwDIbwOZye', '2022-10-10 11:30:30',
         true, true, true, true);
 
 insert into users_roles (user_id, role_id) values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', 1);
@@ -79,4 +81,4 @@ insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4e
 insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 10 );
 insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 11 );
 
-insert into admins (id, phone_number, department_id) values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', '123456', 1);
+insert into admins (id, phone_number, department_id) values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', '123456', 3);
