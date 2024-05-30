@@ -14,13 +14,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.entity.events.DurationUnit;
-import org.fs.rallyroundbackend.entity.events.EventState;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -40,14 +37,18 @@ public class CreateEventRequest {
     private String duration;
     @NotNull
     private DurationUnit durationUnit;
+    @NotNull
     @PositiveOrZero
     private BigDecimal inscriptionPrice;
+    @NotNull
     @Future
     private LocalDate date;
     @NotNull
     private AddressDto address;
+    @NotNull
     @Positive
     private int participantsLimit;
-    @NotNull    private boolean eventCreatorIsParticipant;
+    @NotNull
+    private boolean eventCreatorIsParticipant;
     private LocalTime eventCreatorSelectedStartHour;
 }
