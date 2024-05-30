@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,10 +29,12 @@ public class EventResponse {
     protected String activity;
     protected String description;
     @JsonProperty("startingHours")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     protected LocalTime[] eventSchedules;
-    protected String duration;
+    protected double duration;
     protected DurationUnit durationUnit;
     protected BigDecimal inscriptionPrice;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     protected LocalDate date;
     protected AddressDto address;
     protected int participantsLimit;
