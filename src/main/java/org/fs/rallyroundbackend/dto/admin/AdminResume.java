@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.dto.admin;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class AdminResume {
     protected String name;
     protected String lastName;
     protected String department;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd@HH:mm:ss")
     protected LocalDateTime lastLoginTime;
     protected boolean enabled;
     private boolean isRequesterAccount;

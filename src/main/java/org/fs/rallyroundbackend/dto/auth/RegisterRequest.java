@@ -26,7 +26,7 @@ public class RegisterRequest {
     @NotBlank
     @Email
     protected String email;
-    @NotBlank
+    @NotNull
     protected LocalDate birthdate;
     @NotBlank
     protected String password;
