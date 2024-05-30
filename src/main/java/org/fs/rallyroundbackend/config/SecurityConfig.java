@@ -52,6 +52,8 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/admin/auth/**").hasRole("ADMIN")
                                 .requestMatchers("/rr/api/v1/admin/register").hasAuthority("REGISTER_ADMIN")
                                 .requestMatchers("/rr/api/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/rr/api/v1/admin/disable/{adminId}").hasAuthority("DELETE_ADMIN")
+                                .requestMatchers("/rr/api/v1/admin/enable/{adminId}").hasAuthority("DELETE_ADMIN")
                                 .requestMatchers("/rr/api/v1/admin/modify").hasAuthority("MODIFY_ADMIN")
                                 .requestMatchers("/rr/api/v1/admin/find/").hasAuthority("READ_ADMINS")
                                 .requestMatchers("/rr/api/v1/admin/find/{adminId}").hasAuthority("READ_ADMINS")

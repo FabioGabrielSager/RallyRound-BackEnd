@@ -77,14 +77,11 @@ public class AdminServiceImp implements AdminService {
         newAdmin.setRoles(Set.of(role));
         newAdmin.setPrivileges(this.fetchPrivilegesFromRequest(request.getPrivileges()));
 
-        Optional<DepartmentEntity> departmentEntityOptional =
-                this.departmentRepository.findByName(request.getDepartment());
+        DepartmentEntity departmentEntity =
+                this.departmentRepository.findByName(request.getDepartment())
+                        .orElseThrow(() -> new EntityNotFoundException("Department not found."));
 
-        if(departmentEntityOptional.isEmpty()) {
-            newAdmin.setDepartment(DepartmentEntity.builder().name(request.getDepartment()).build());
-        } else {
-            newAdmin.setDepartment(departmentEntityOptional.get());
-        }
+        newAdmin.setDepartment(departmentEntity);
 
         newAdmin = this.userRepository.save(newAdmin);
 
@@ -139,6 +136,7 @@ public class AdminServiceImp implements AdminService {
         AdminCompleteDataDto result = this.modelMapper.map(adminEntity, AdminCompleteDataDto.class);
 
         result.setPrivileges(this.mapPrivilegesByCategory(adminEntity));
+        result.setRequesterAccount(adminEntity.getEmail().equals(requesterAdminEmail));
 
         return result;
     }
@@ -200,14 +198,28 @@ public class AdminServiceImp implements AdminService {
 
     @Override
     @Transactional
-    public void deleteAdmin(UUID adminId, String requesterAdminEmail) {
+    public void disableAdmin(UUID adminId, String requesterAdminEmail) {
         AdminEntity adminToDelete = this.adminRepository.findById(adminId).orElseThrow(
                 () -> new EntityNotFoundException("Admin with id " + adminId + " not found.")
         );
 
         adminToDelete.setEnabled(false);
 
-        this.adminActivityLoggerService.saveLog("DELETE_ADMIN", "Delete admin by id",
+        this.adminActivityLoggerService.saveLog("DISABLE_ADMIN", "Disable admin by id",
+                adminId.toString(), UUID.class.getTypeName(), requesterAdminEmail);
+
+        this.adminRepository.save(adminToDelete);
+    }
+
+    @Override
+    public void enableAdmin(UUID adminId, String requesterAdminEmail) {
+        AdminEntity adminToDelete = this.adminRepository.findById(adminId).orElseThrow(
+                () -> new EntityNotFoundException("Admin with id " + adminId + " not found.")
+        );
+
+        adminToDelete.setEnabled(true);
+
+        this.adminActivityLoggerService.saveLog("ENABLE_ADMIN", "Enable admin by id",
                 adminId.toString(), UUID.class.getTypeName(), requesterAdminEmail);
 
         this.adminRepository.save(adminToDelete);

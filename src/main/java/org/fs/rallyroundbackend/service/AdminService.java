@@ -19,5 +19,6 @@ public interface AdminService {
                                           String name, String lastName);
     AdminCompleteDataDto getAdmin(UUID adminId, String requesterAdminEmail);
     AdminCompleteDataDto modifyAdmin(AdminModificationRequest request, String requesterAdminEmail);
-    void deleteAdmin(UUID adminId, String requesterAdminEmail);
+    void disableAdmin(UUID adminId, String requesterAdminEmail);
+    void enableAdmin(UUID adminId, String requesterAdminEmail);
 }

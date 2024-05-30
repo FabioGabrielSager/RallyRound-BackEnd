@@ -13,15 +13,7 @@ import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,11 +46,20 @@ public class AdminController {
                 adminEmail));
     }
 
-    @DeleteMapping("/delete/{adminId}")
-    public ResponseEntity<Object> deleteAdmin(@PathVariable UUID adminId, HttpServletRequest request) {
+    @DeleteMapping("/disable/{adminId}")
+    public ResponseEntity<Object> disableAdmin(@PathVariable UUID adminId, HttpServletRequest request) {
         String requesterAdminEmail = this.jwtService.getUsernameFromToken(this.jwtService.getTokenFromRequest(request));
 
-        this.adminService.deleteAdmin(adminId, requesterAdminEmail);
+        this.adminService.disableAdmin(adminId, requesterAdminEmail);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/enable/{adminId}")
+    public ResponseEntity<Object> enableAdmin(@PathVariable UUID adminId, HttpServletRequest request) {
+        String requesterAdminEmail = this.jwtService.getUsernameFromToken(this.jwtService.getTokenFromRequest(request));
+
+        this.adminService.enableAdmin(adminId, requesterAdminEmail);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -72,14 +73,14 @@ public class AdminController {
     public ResponseEntity<List<AdminResume>> getAllAdmins(
             @RequestParam(required = false) LocalDate registeredDateFrom,
             @RequestParam(required = false) LocalDate registeredDateTo,
-            @RequestParam(required = false) String deparment,
+            @RequestParam(required = false) String department,
             @RequestParam(required = false) Boolean enabled,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String lastName,
             HttpServletRequest request) {
         String adminEmail = this.jwtService.getUsernameFromToken(this.jwtService.getTokenFromRequest(request));
         return ResponseEntity.ok(this.adminService.getAllAdminsResumes(adminEmail, registeredDateFrom,
-                registeredDateTo, deparment, enabled, name, lastName));
+                registeredDateTo, department, enabled, name, lastName));
     }
 
     @GetMapping("/find/{adminId}")
