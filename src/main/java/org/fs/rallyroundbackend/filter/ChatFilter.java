@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fs.rallyroundbackend.dto.chat.MessageRequest;
+import org.fs.rallyroundbackend.dto.chat.ToChatMessageRequest;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.chats.PrivateChatEntity;
 import org.fs.rallyroundbackend.repository.chat.EventChatRepository;
@@ -55,8 +56,8 @@ public class ChatFilter extends OncePerRequestFilter {
 
             String requestUri = request.getRequestURI();
             if (requestUri.equals("/rr/api/v1/chats/message/") && request.getMethod().equals("POST")) {
-                MessageRequest messageRequest = this.objectMapper
-                        .readValue(cachedBodyHttpServletRequest.getReader(), MessageRequest.class);
+                ToChatMessageRequest messageRequest = this.objectMapper
+                        .readValue(cachedBodyHttpServletRequest.getReader(), ToChatMessageRequest.class);
                 if (messageRequest.getChatId() != null)
                     chatId = messageRequest.getChatId();
             } else if (requestUri

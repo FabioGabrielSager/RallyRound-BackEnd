@@ -2,9 +2,8 @@ package org.fs.rallyroundbackend.service;
 
 import org.fs.rallyroundbackend.dto.chat.ChatMessagesResponse;
 import org.fs.rallyroundbackend.dto.chat.ToChatMessageRequest;
-import org.fs.rallyroundbackend.dto.chat.ToUserMessageRequest;
+import org.springframework.security.access.AccessDeniedException;
 
-import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 
 /**
@@ -20,7 +19,7 @@ public interface ChatService {
      * @return The response containing the chat messages.
      * @throws AccessDeniedException If the user is not a participant of the chat.
      */
-    ChatMessagesResponse getChatMessages(String userEmail, UUID chatId) throws AccessDeniedException;
+    ChatMessagesResponse getChatMessages(String userEmail, UUID chatId);
 
     /**
      * Processes a message sent by the user.

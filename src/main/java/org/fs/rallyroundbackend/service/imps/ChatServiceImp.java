@@ -19,10 +19,10 @@ import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepositor
 import org.fs.rallyroundbackend.service.ChatService;
 import org.modelmapper.ModelMapper;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class ChatServiceImp implements ChatService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
-    public ChatMessagesResponse getChatMessages(String userEmail, UUID chatId) throws AccessDeniedException {
+    public ChatMessagesResponse getChatMessages(String userEmail, UUID chatId) {
         ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail).orElseThrow(
                 () -> new EntityNotFoundException("User with email " + userEmail + " not found")
         );
