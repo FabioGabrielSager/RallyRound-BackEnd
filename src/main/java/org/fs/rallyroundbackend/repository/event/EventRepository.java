@@ -11,6 +11,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -98,4 +99,10 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
     );
 
     List<EventEntity> findAllByStateInAndNextStateTransitionBefore(EventState[] states, LocalDateTime dateTime);
+
+    @Query("SELECT e FROM EventEntity AS e " +
+            "JOIN EventParticipantEntity AS ep ON e=ep.event " +
+            "JOIN ParticipantEntity AS p ON p=ep.participant " +
+            "WHERE e.id = :eventId AND ep.isEventCreator=true AND p.id = :eventCreatorId")
+    Optional<EventEntity> findEventByIdAndEventCreator(UUID eventCreatorId, UUID eventId);
 }

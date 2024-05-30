@@ -428,6 +428,28 @@ public class EventServiceImp implements EventService {
                 "Feedback submitted successfully");
     }
 
+    @Override
+    @Transactional
+    public void cancelEvent(UUID eventId, String creatorEmail) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
+                () -> new EntityNotFoundException("User with email " + creatorEmail + " not found.")
+        );
+
+        EventEntity eventEntity = this.eventRepository.findEventByIdAndEventCreator(participant.getId(), eventId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException("event not found")
+                );
+
+        eventEntity.setState(EventState.CANCELED);
+
+        // TODO: When payments refund are implemented add logic to refund
+        //  the inscriptions payment to the participants.
+
+        // TODO: When notifications are implemented add logic to notify participants of this event.
+
+        this.eventRepository.save(eventEntity);
+    }
+
     private EventResumePageDto fetchEventsWithPagination(
             UUID creatorId, UUID participantToExcludeId, UUID participantToIncludeId, EventState eventState, String activity,
             String neighborhood, String locality, String adminSubdistrict, String adminDistrict, LocalDate dateFrom,

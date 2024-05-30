@@ -150,4 +150,7 @@ public interface EventService {
      * xby the given user.
      */
     EventFeedbackResponse submitFeedback(EventFeedbackRequest feedbackRequest, String userEmail);
+
+    void cancelEvent(UUID eventId, String creatorEmail);
+
 }

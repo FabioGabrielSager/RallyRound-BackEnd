@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,6 +44,15 @@ public class EventController {
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(this.eventService.createEvent(eventDto, creatorEmail));
+    }
+
+    @PatchMapping("/cancel/{eventId}")
+    public ResponseEntity<Void> modifyEvent(@PathVariable UUID eventId, HttpServletRequest request) {
+        String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        this.eventService.cancelEvent(eventId, creatorEmail);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/find/")
