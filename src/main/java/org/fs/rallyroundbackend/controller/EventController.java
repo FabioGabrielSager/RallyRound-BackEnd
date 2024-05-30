@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
@@ -53,6 +54,14 @@ public class EventController {
         this.eventService.cancelEvent(eventId, creatorEmail);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping("/modify/")
+    public ResponseEntity<EventResponseForEventCreators> cancelEvent(@RequestBody EventModificationRequest modificationRequest,
+                                            HttpServletRequest request) {
+        String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.eventService.modifyEvent(modificationRequest, creatorEmail));
     }
 
     @GetMapping("/find/")

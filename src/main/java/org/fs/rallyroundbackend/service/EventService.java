@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
@@ -153,4 +154,5 @@ public interface EventService {
 
     void cancelEvent(UUID eventId, String creatorEmail);
 
+    EventResponseForEventCreators modifyEvent(EventModificationRequest request, String creatorEmail);
 }

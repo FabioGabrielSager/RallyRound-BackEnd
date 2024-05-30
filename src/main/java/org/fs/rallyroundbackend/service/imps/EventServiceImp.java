@@ -6,6 +6,7 @@ import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
@@ -28,6 +29,7 @@ import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
+import org.fs.rallyroundbackend.exception.event.InvalidEventStartingTimesException;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
 import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
@@ -37,6 +39,8 @@ import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventParticipantRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
+import org.fs.rallyroundbackend.repository.event.EventScheduleRepository;
+import org.fs.rallyroundbackend.repository.event.EventScheduleVoteRepository;
 import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
@@ -75,6 +79,8 @@ public class EventServiceImp implements EventService {
     private final LocationService locationService;
     private final EventInscriptionRepository eventInscriptionRepository;
     private final EventParticipantRepository eventParticipantRepository;
+    private final EventScheduleVoteRepository eventScheduleVoteRepository;
+    private final EventScheduleRepository eventScheduleRepository;
 
     @Override
     @Transactional
@@ -177,9 +183,174 @@ public class EventServiceImp implements EventService {
         eventResponse.setEventCreatorReputation(creator.getReputationAsEventCreator());
         eventResponse.setActivity(eventEntity.getActivity().getName());
         eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
-        if(eventEntity.isEventCreatorParticipant()) {
+        if (eventEntity.isEventCreatorParticipant()) {
             eventResponse.setSelectedStartingHour(request.getEventCreatorSelectedStartHour());
-            if(eventEntity.getEventSchedules().size() > 1) {
+            if (eventEntity.getEventSchedules().size() > 1) {
+                eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
+                        eventEntity.getEventParticipants()));
+            }
+        }
+
+        return eventResponse;
+    }
+
+    @Override
+    @Transactional
+    public EventResponseForEventCreators modifyEvent(EventModificationRequest request, String creatorEmail) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
+                () -> new EntityNotFoundException("User with email " + creatorEmail + " not found.")
+        );
+
+        EventEntity eventEntity = this.eventRepository
+                .findEventByIdAndEventCreator(participant.getId(), request.getEventId())
+                .orElseThrow(
+                        () -> new EntityNotFoundException("event not found.")
+                );
+
+        // I can get without an if present check because i already know that the event creator
+        // of this event exists, and it's the requester.
+        EventParticipantEntity creatorEventParticipantEntity = this.eventParticipantRepository
+                .findByParticipantIdAndEventId(participant.getId(), eventEntity.getId())
+                .get();
+
+        if (eventEntity.getState() != EventState.WAITING_FOR_PARTICIPANTS) {
+            throw new EventStateException("Only events that are waiting for participants can be modified.");
+        }
+
+        if (request.getActivity() != null) {
+            ActivityEntity activityEntity = new ActivityEntity();
+            Optional<ActivityEntity> activityEntityOptional = this.activityRepository.findByName(request.getActivity());
+
+            if (activityEntityOptional.isPresent()) {
+                activityEntity = activityEntityOptional.get();
+            } else {
+                activityEntity.setName(request.getActivity());
+            }
+
+            eventEntity.setActivity(activityEntity);
+        }
+
+        if (request.getDescription() != null && !request.getDescription().isEmpty()) {
+            eventEntity.setDescription(request.getDescription());
+        }
+
+        if (request.getDuration() != null && !request.getDuration().isEmpty()) {
+            eventEntity.setDuration(Double.parseDouble(request.getDuration()));
+        }
+
+        if (request.getDurationUnit() != null) {
+            eventEntity.setDurationUnit(request.getDurationUnit());
+        }
+
+        if (request.getInscriptionPrice() != null) {
+            eventEntity.setInscriptionPrice(request.getInscriptionPrice());
+        }
+
+        if (request.getDate() != null) {
+            eventEntity.setDate(request.getDate());
+        }
+
+        if (request.getAddress() != null) {
+            // Validating the address of the event
+            AddressDto[] bingMapApiAutosuggestionResponse =
+                    this.bingMapApiClient.getAutosuggestionByAddress(
+                                    request.getAddress().getAddress().getAddressLine())
+                            .block();
+
+            Optional<AddressDto> filteredAddress = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
+                    .filter(p -> p.equals(request.getAddress())).findFirst();
+
+            if (filteredAddress.isEmpty()) {
+                throw new InvalidAddressException();
+            }
+
+            eventEntity.setAddress(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
+        }
+
+        if (request.getParticipantsLimit() != null) {
+            eventEntity.setParticipantsLimit(request.getParticipantsLimit());
+        }
+
+        if (request.getEventSchedules() != null) {
+            if ((request.getEventCreatorIsParticipant() != null && request.getEventCreatorIsParticipant()
+                    || eventEntity.isEventCreatorParticipant())
+                    && request.getEventCreatorSelectedStartHour() == null) {
+                if (Arrays.stream(request.getEventSchedules())
+                        .noneMatch(es ->
+                                es.equals(creatorEventParticipantEntity.getScheduleVote().getSelectedHour()
+                                        .toLocalTime()))) {
+                    throw new InvalidEventStartingTimesException("The new event's starting times do not match with " +
+                            "event creator selected starting hour, you must update it also.");
+                }
+            }
+
+            this.eventScheduleRepository.deleteAll(eventEntity.getEventSchedules());
+            eventEntity.setEventSchedules(new ArrayList<>());
+
+            for (LocalTime t : request.getEventSchedules()) {
+                EventSchedulesEntity eventSchedule = new EventSchedulesEntity();
+                eventSchedule.setEvent(eventEntity);
+                Optional<ScheduleEntity> scheduleEntity = scheduleRepository.findByStartingHour(Time.valueOf(t));
+
+                if (scheduleEntity.isPresent()) {
+                    eventSchedule.setSchedule(scheduleEntity.get());
+                } else {
+                    ScheduleEntity schedule = new ScheduleEntity();
+                    schedule.setStartingHour(Time.valueOf(t));
+                    eventSchedule.setSchedule(schedule);
+                    eventSchedule.setSelected(false);
+                }
+
+                eventEntity.getEventSchedules().add(eventSchedule);
+            }
+        }
+
+        if (request.getEventCreatorIsParticipant() != null) {
+            eventEntity.setEventCreatorParticipant(request.getEventCreatorIsParticipant());
+            if (!request.getEventCreatorIsParticipant()) {
+                if (creatorEventParticipantEntity.getScheduleVote() != null) {
+                    this.eventScheduleVoteRepository.delete(creatorEventParticipantEntity.getScheduleVote());
+                    creatorEventParticipantEntity.setScheduleVote(null);
+                }
+            }
+        }
+
+        if(request.getEventCreatorSelectedStartHour() != null
+                && ((request.getEventCreatorIsParticipant() == null && eventEntity.isEventCreatorParticipant())
+                || Boolean.TRUE.equals(request.getEventCreatorIsParticipant())) ) {
+
+            // If the event creator participates of the event, register its selected starting hour
+            if (eventEntity.getEventSchedules()
+                    .stream()
+                    .noneMatch(es -> es.getSchedule().getStartingHour().toLocalTime()
+                            .equals(request.getEventCreatorSelectedStartHour()))) {
+                throw new InvalidSelectedHourException();
+            }
+
+            ScheduleVoteEntity scheduleVote = new ScheduleVoteEntity();
+
+            if (creatorEventParticipantEntity.getScheduleVote() != null) {
+                scheduleVote = creatorEventParticipantEntity.getScheduleVote();
+            }
+
+            scheduleVote.setEventParticipant(creatorEventParticipantEntity);
+            scheduleVote.setSelectedHour(Time.valueOf(request.getEventCreatorSelectedStartHour()));
+            creatorEventParticipantEntity.setScheduleVote(scheduleVote);
+        }
+
+        this.eventRepository.save(eventEntity);
+
+        EventResponseForEventCreators eventResponse =
+                this.modelMapper.map(eventEntity, EventResponseForEventCreators.class);
+
+        eventResponse.setChatId(eventEntity.getChat().getChatId());
+        eventResponse.setEventCreatorReputation(participant.getReputationAsEventCreator());
+        eventResponse.setActivity(eventEntity.getActivity().getName());
+        eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
+        if (eventEntity.isEventCreatorParticipant()) {
+            eventResponse.setSelectedStartingHour(creatorEventParticipantEntity
+                    .getScheduleVote().getSelectedHour().toLocalTime());
+            if (eventEntity.getEventSchedules().size() > 1) {
                 eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
                         eventEntity.getEventParticipants()));
             }
@@ -242,7 +413,7 @@ public class EventServiceImp implements EventService {
         eventResponse.setEventCreatorReputation(eventCreatorReputation);
         eventResponse.setActivity(eventEntity.getActivity().getName());
         eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
-        if(eventEntity.getEventSchedules().size() > 1) {
+        if (eventEntity.getEventSchedules().size() > 1) {
             eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
                     eventEntity.getEventParticipants()));
         }
@@ -284,7 +455,7 @@ public class EventServiceImp implements EventService {
         eventResponse.setActivity(eventEntity.getActivity().getName());
         eventResponse.setEventCreatorIsParticipant(eventEntity.isEventCreatorParticipant());
 
-        if(eventEntity.isEventCreatorParticipant()) {
+        if (eventEntity.isEventCreatorParticipant()) {
             Optional<EventParticipantEntity> creatorEventParticipant = creatorEntity.getEventParticipants()
                     .stream()
                     .filter(ep -> ep.getEvent().getId() == eventEntity.getId())
@@ -297,7 +468,7 @@ public class EventServiceImp implements EventService {
                             .toLocalTime()));
         }
 
-        if(eventEntity.getEventSchedules().size() > 1) {
+        if (eventEntity.getEventSchedules().size() > 1) {
             eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
                     eventEntity.getEventParticipants()));
         }
@@ -377,12 +548,12 @@ public class EventServiceImp implements EventService {
                             .getScheduleVote()
                             .getSelectedHour()
                             .toLocalTime());
-            if(eventEntity.getState() == EventState.FINALIZED) {
+            if (eventEntity.getState() == EventState.FINALIZED) {
                 eventResponse.setHasAlreadySentEventFeedback(eventParticipantEntity.getFeedback() != null);
             }
         });
 
-        if(eventEntity.getEventSchedules().size() > 1) {
+        if (eventEntity.getEventSchedules().size() > 1) {
             eventResponse.setStartingHoursTimesVoted(this.countVotesForStartingHour(eventEntity.getEventSchedules(),
                     eventEntity.getEventParticipants()));
         }
@@ -407,11 +578,11 @@ public class EventServiceImp implements EventService {
             throw new EventStateException("Cannot provide feedback for non-finalized events.");
         }
 
-        if(eventParticipantEntity.isEventCreator()) {
+        if (eventParticipantEntity.isEventCreator()) {
             throw new AccessDeniedException("The event creator can not give feedback about their own event.");
         }
 
-        if(eventParticipantEntity.getFeedback() != null) {
+        if (eventParticipantEntity.getFeedback() != null) {
             throw new EventFeedbackAlreadyProvidedException();
         }
 
