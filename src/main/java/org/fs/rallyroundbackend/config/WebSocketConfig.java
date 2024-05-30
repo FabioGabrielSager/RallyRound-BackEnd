@@ -2,7 +2,6 @@ package org.fs.rallyroundbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
