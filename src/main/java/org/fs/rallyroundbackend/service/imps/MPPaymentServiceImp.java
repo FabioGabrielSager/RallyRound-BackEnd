@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.fs.rallyroundbackend.dto.mercadopago.MpWebHookNotificationDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
@@ -23,14 +24,17 @@ import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPAuthTokenEntity;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.MPPaymentService;
+import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -46,6 +50,7 @@ public class MPPaymentServiceImp implements MPPaymentService {
     private final EventRepository eventRepository;
     private final MPAuthTokenRepository mpAuthTokenRepository;
     private final EventInscriptionRepository eventInscriptionRepository;
+    private final ParticipantNotificationService participantNotificationService;
 
     @Override
     public String createPreferenceForAnEventInscription(EventInscriptionEntity inscriptionEntity, String userEmail)
@@ -141,19 +146,42 @@ public class MPPaymentServiceImp implements MPPaymentService {
 
         eventInscriptionEntity.setPaymentStatus(MPPaymentStatus.valueOf(payment.getStatus()));
         
-        MPPaymentStatus mpPaymentStatus = MPPaymentStatus.valueOf(payment.getStatus());   
+        MPPaymentStatus mpPaymentStatus = MPPaymentStatus.valueOf(payment.getStatus());
+
+        ParticipantNotificationDto participantNotification = ParticipantNotificationDto
+                .builder()
+                .type(ParticipantNotificationType.EVENT_INSCRIPTION_UPDATE)
+                .impliedResourceId(eventInscriptionEntity.getEvent().getId())
+                .title("Actualización de pago de inscripción")
+                .isParticipantEventCreated(false)
+                .build();
     
         if(mpPaymentStatus.equals(MPPaymentStatus.approved)) {
             if(eventInscriptionEntity.getStatus().equals(EventInscriptionStatus
                     .INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE)) {
                 eventInscriptionEntity
                         .setStatus(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE);
+
+                participantNotification.setMessage(String.format("Pago de inscripción a evento de %s " +
+                                "organizado para el día %s recibido con éxito. Ya puede completar la inscripción.",
+                        eventInscriptionEntity.getEvent().getActivity().getName(),
+                        eventInscriptionEntity.getEvent().getDate()));
             }
         } else if (mpPaymentStatus.equals(MPPaymentStatus.cancelled)
                 || mpPaymentStatus.equals(MPPaymentStatus.rejected)
                 || mpPaymentStatus.equals(MPPaymentStatus.refunded)) {
             eventInscriptionEntity.setStatus(EventInscriptionStatus.REJECTED);
+
+            participantNotification.setMessage(String.format("Pago de inscripción a evento de %s " +
+                            "organizado para el día %s %s. La inscripción fue rechazada.",
+                    eventInscriptionEntity.getEvent().getActivity().getName(),
+                    eventInscriptionEntity.getEvent().getDate(),
+                    mpPaymentStatus.equals(MPPaymentStatus.cancelled)
+                            || mpPaymentStatus.equals(MPPaymentStatus.rejected)  ? "rechazado" : "rembolsado"));
         }
+
+        this.participantNotificationService.sendNotification(participantNotification,
+                eventInscriptionEntity.getParticipant().getId());
 
         this.eventInscriptionRepository.save(eventInscriptionEntity);
     }

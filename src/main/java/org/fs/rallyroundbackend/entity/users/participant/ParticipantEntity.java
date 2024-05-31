@@ -63,4 +63,8 @@ public class ParticipantEntity extends UserEntity {
     @OneToMany
     @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
     private List<EventInscriptionEntity> eventInscriptions;
+
+    @OneToMany
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    private List<ParticipantNotificationEntity> notifications;
 }

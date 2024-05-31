@@ -109,6 +109,7 @@ public class AuthServiceImp implements AuthService {
         return AuthResponse.builder()
                 .token(token)
                 .username(user.getName())
+                .notificationTrayId(user.getId())
                 .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
                         .collect(Collectors.toSet()))
                 .privileges(userPrivileges.stream().toList())
@@ -250,7 +251,7 @@ public class AuthServiceImp implements AuthService {
                 .username(user.getName())
                 .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
                         .collect(Collectors.toSet()))
-                .privateChatId(user.getId())
+                .notificationTrayId(user.getId())
                 .build();
     }
 

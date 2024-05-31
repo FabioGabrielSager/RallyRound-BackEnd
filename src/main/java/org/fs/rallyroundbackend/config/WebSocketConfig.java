@@ -53,7 +53,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/rr")
                 .setUserDestinationPrefix("/user")
-                .enableSimpleBroker("/queue", "/topic");
+                // TODO: Re-search how to use user current web socket session to send private messages.
+                .enableSimpleBroker("/queue", "/topic", "/user");
     }
 
     @Override

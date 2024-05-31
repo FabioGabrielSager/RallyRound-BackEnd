@@ -13,6 +13,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.entity.chats.ChatType;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
@@ -27,6 +28,7 @@ import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
 import org.fs.rallyroundbackend.exception.event.InvalidEventStartingTimesException;
@@ -45,6 +47,7 @@ import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
+import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -81,6 +84,7 @@ public class EventServiceImp implements EventService {
     private final EventParticipantRepository eventParticipantRepository;
     private final EventScheduleVoteRepository eventScheduleVoteRepository;
     private final EventScheduleRepository eventScheduleRepository;
+    private final ParticipantNotificationService participantNotificationService;
 
     @Override
     @Transactional
@@ -616,7 +620,23 @@ public class EventServiceImp implements EventService {
         // TODO: When payments refund are implemented add logic to refund
         //  the inscriptions payment to the participants.
 
-        // TODO: When notifications are implemented add logic to notify participants of this event.
+        ParticipantNotificationDto participantNotification = ParticipantNotificationDto
+                .builder()
+                .type(ParticipantNotificationType.EVENT_STATE_UPDATE)
+                .impliedResourceId(eventEntity.getId())
+                .title("Evento cancelado")
+                .message(String.format("El evento de %s organizado para el dia %s fue cancelado",
+                        eventEntity.getActivity().getName(), eventEntity.getDate()))
+                .build();
+
+        eventEntity.getEventParticipants().forEach(ep -> {
+            if(!ep.isEventCreator()) {
+                participantNotification.setParticipantEventCreated(ep.isEventCreator());
+
+                this.participantNotificationService.sendNotification(participantNotification,
+                        ep.getParticipant().getId());
+            }
+        });
 
         this.eventRepository.save(eventEntity);
     }

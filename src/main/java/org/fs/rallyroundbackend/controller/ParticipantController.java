@@ -12,6 +12,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
+import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationResponse;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
@@ -23,6 +24,7 @@ import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
+import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,6 +47,7 @@ public class ParticipantController {
     private final EventInscriptionService eventInscriptionService;
     private final EventService eventService;
     private final ParticipantService participantService;
+    private final ParticipantNotificationService participantNotificationService;
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
@@ -190,5 +193,22 @@ public class ParticipantController {
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("notifications/")
+    public ResponseEntity<List<ParticipantNotificationResponse>> getParticipantNotifications(HttpServletRequest request)
+    {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.participantNotificationService.getNotViewedParticipantNotifications(userEmail));
+    }
+
+    @PatchMapping("notifications/{id}/viewed")
+    public ResponseEntity<ParticipantNotificationResponse> markNotificationAsViewed(@PathVariable(value = "id")
+                                                                                        UUID notificationId,
+                                                                                    HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+        return ResponseEntity
+                .ok(this.participantNotificationService.markNotificationAsViewed(notificationId, userEmail));
     }
 }

@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -34,6 +35,7 @@ public class EventResumeDto {
     @Size(min = 1)
     @NotNull
     @JsonProperty("startingHours")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime[] eventSchedules;
     @NotBlank
     private double duration;

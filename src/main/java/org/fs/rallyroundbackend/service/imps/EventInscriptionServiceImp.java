@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.inscription.CreatedEventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionPaymentLinkDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
@@ -13,6 +14,7 @@ import org.fs.rallyroundbackend.entity.events.ScheduleVoteEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventInscriptionAlreadyApprovedException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventInscriptionStateChangeException;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
@@ -21,6 +23,7 @@ import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
 import org.fs.rallyroundbackend.service.MPPaymentService;
+import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,7 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
     private final EventRepository eventRepository;
     private final ParticipantRepository participantRepository;
     private final MPPaymentService mpPaymentService;
+    private final ParticipantNotificationService participantNotificationService;
 
     @Override
     @Transactional
@@ -183,6 +187,24 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
 
             // Update the state of the event
             eventEntity.setState(EventState.READY_TO_START);
+
+            // Send notification to participants.
+            ParticipantNotificationDto participantNotification = ParticipantNotificationDto
+                    .builder()
+                    .type(ParticipantNotificationType.EVENT_STATE_UPDATE)
+                    .impliedResourceId(eventEntity.getId())
+                    .title("Evento Listo para comenzar")
+                    .message(String.format("El evento de %s organizado para el dia %s ha conseguido " +
+                                    "todos los participantes necesarios",
+                            eventEntity.getActivity().getName(), eventEntity.getDate()))
+                    .build();
+
+            eventEntity.getEventParticipants().forEach(ep -> {
+                participantNotification.setParticipantEventCreated(ep.isEventCreator());
+
+                this.participantNotificationService.sendNotification(participantNotification,
+                        ep.getParticipant().getId());
+            });
 
             // Update the event next state change date time
             eventEntity.setNextStateTransition(LocalDateTime.of(eventEntity.getDate(),

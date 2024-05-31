@@ -19,7 +19,7 @@ public class WebSocketSecurityConfig {
                 .nullDestMatcher().authenticated()
                 .simpDestMatchers("/rr/**").hasRole("PARTICIPANT")
                 .simpSubscribeDestMatchers("/rr/**").denyAll()
-                .simpSubscribeDestMatchers("/topic/**", "/queue/**").hasRole("PARTICIPANT")
+                .simpSubscribeDestMatchers("/topic/**", "/queue/**", "/user/**").hasRole("PARTICIPANT")
                 .simpMessageDestMatchers("/topic/**", "/queue/**").denyAll()
                 .anyMessage().denyAll();
         return messages.build();
