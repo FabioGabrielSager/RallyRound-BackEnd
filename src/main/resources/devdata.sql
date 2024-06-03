@@ -69,16 +69,16 @@ values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', 'Fabio', 'Sager', 'fabio@email.c
         true, true, true, true);
 
 insert into users_roles (user_id, role_id) values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', 1);
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 1 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 2 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 3 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 4 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 5 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 6 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 7 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 8 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 9 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 10 );
-insert into admins_privileges(admin_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 11 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 1 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 2 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 3 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 4 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 5 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 6 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 7 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 8 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 9 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 10 );
+insert into user_privileges(user_id, privilege_id) values ( 'eaa879c6-59e1-4ea7-950f-0063b70eed56', 11 );
 
 insert into admins (id, phone_number, department_id) values ('eaa879c6-59e1-4ea7-950f-0063b70eed56', '123456', 3);

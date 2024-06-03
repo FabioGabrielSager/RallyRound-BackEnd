@@ -51,6 +51,7 @@ public class ParticipantEntity extends UserEntity {
     private List<EventParticipantEntity> eventParticipants;
 
     @ManyToMany
+    @JoinTable(name = "participants_chats")
     private List<PrivateChatEntity> chats;
 
     @OneToMany(mappedBy = "sender")

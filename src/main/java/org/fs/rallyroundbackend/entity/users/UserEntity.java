@@ -59,8 +59,8 @@ public class UserEntity implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "admins_privileges",
-            joinColumns = @JoinColumn(name = "admin_id", referencedColumnName = "id"),
+            name = "user_privileges",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id")
     )
     private List<PrivilegeEntity> privileges;

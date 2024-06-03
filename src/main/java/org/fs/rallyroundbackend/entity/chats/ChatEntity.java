@@ -30,7 +30,7 @@ public class ChatEntity {
     @Column(name = "chat_type", nullable = false)
     protected ChatType chatType;
 
-    @OneToMany(orphanRemoval = true)
+    @OneToMany(orphanRemoval = true, mappedBy = "chat")
     @Cascade(value = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     protected List<ChatMessageEntity> messages;
 }

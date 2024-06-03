@@ -80,6 +80,7 @@ public class ParticipantServiceImp implements ParticipantService {
     private final ParticipantNotificationService participantNotificationService;
 
     @Override
+    @Transactional
     public UserPublicDataDto getParticipantPublicData(UUID userId) {
         ParticipantEntity participantEntity =
                 this.participantRepository.findById(userId)
@@ -167,6 +168,7 @@ public class ParticipantServiceImp implements ParticipantService {
     }
 
     @Override
+    @Transactional
     public UserPersonalDataDto getPersonalData(String userEmail) {
         ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(() ->

@@ -20,7 +20,7 @@ import lombok.Setter;
 public class PrivilegeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private short id;
+    private int id;
 
     @Column(nullable = false)
     private String name;

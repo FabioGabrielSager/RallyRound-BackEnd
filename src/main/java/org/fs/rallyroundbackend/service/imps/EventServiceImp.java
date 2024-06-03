@@ -364,6 +364,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResumePageDto findEvents(String userEmail, String activity, boolean showOnlyAvailableEvents,
                                          String neighborhood, String locality, String adminSubdistrict,
                                          String adminDistrict, LocalDate dateFrom, LocalDate dateTo,
@@ -381,6 +382,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResumePageDto getEventsByCreator(String creatorEmail, String activity, String neighborhood,
                                                  String locality, String adminSubdistrict, String adminDistrict,
                                                  LocalDate dateFrom, LocalDate dateTo, List<LocalTime> hours,
@@ -396,6 +398,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResponse findEventById(UUID eventId) {
         EventEntity eventEntity = this.eventRepository.findById(eventId).orElseThrow(
                 () -> new EntityNotFoundException("event not found")
@@ -426,6 +429,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResponseForEventCreators findParticipantCreatedEventById(String userEmail, UUID eventId) {
         this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(
@@ -481,6 +485,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResumePageDto getEventsByParticipant(String participantEmail, LocalDateTime createdAt,
                                                      EventInscriptionStatus status, MPPaymentStatus paymentStatus,
                                                      String activity, String neighborhood, String locality,
@@ -498,6 +503,7 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    @Transactional
     public EventResponseForParticipants findParticipantSignedEventById(String userEmail, UUID eventId) {
         ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(

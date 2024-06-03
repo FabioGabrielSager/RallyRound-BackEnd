@@ -35,6 +35,9 @@ public class ChatMessageEntity {
     private ZonedDateTime timestamp;
 
     @ManyToOne
+    private ChatEntity chat;
+
+    @ManyToOne
     @JoinColumn(name = "sender_id")
     private ParticipantEntity sender;
 }

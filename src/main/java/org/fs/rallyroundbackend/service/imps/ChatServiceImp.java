@@ -93,7 +93,7 @@ public class ChatServiceImp implements ChatService {
                     "The chat is associated with an event that has been finalized or canceled.");
         }
 
-        ChatMessageEntity messageEntity = this.createChatMessageEntity(message, sender);
+        ChatMessageEntity messageEntity = this.createChatMessageEntity(message, sender, chat);
 
         if(chat.getMessages() == null) {
             chat.setMessages(new ArrayList<>());
@@ -110,7 +110,8 @@ public class ChatServiceImp implements ChatService {
         return message;
     }
 
-    private ChatMessageEntity createChatMessageEntity(MessageRequest messageRequest, ParticipantEntity sender) {
+    private ChatMessageEntity createChatMessageEntity(MessageRequest messageRequest, ParticipantEntity sender,
+                                                      ChatEntity chat) {
         ZonedDateTime zonedDateTimeInBuenosAires = messageRequest.getTimestamp()
                 .withZoneSameInstant(ZoneId.of("America/Argentina/Buenos_Aires"));
 
@@ -118,6 +119,7 @@ public class ChatServiceImp implements ChatService {
                 .id(messageRequest.getMessageId())
                 .message(messageRequest.getMessage())
                 .timestamp(zonedDateTimeInBuenosAires)
+                .chat(chat)
                 .sender(sender)
                 .build();
     }
