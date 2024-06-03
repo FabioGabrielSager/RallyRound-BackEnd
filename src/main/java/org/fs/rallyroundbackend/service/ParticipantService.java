@@ -57,4 +57,6 @@ public interface ParticipantService {
      * @param password the password of the participant to verify their identity
      */
     void deleteParticipantAccount(String userEmail, String password);
+
+    void removeParticipantFromAnEvent(String participantEmail, UUID eventId);
 }

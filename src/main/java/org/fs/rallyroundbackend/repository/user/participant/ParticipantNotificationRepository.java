@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.repository.user.participant;
 
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -19,4 +20,9 @@ public interface ParticipantNotificationRepository extends JpaRepository<Partici
             "JOIN ParticipantEntity AS p ON n.participant=p " +
             "WHERE p.email = :participantEmail AND n.id = :notificationId")
     Optional<ParticipantNotificationEntity> findParticipantNotification(UUID notificationId, String participantEmail);
+
+    @Modifying
+    @Query("DELETE FROM ParticipantNotificationEntity WHERE impliedResourceId=:impliedResourceId " +
+            "AND participant.id=:participantId")
+    void deleteAllByImpliedResourceIdAndParticipantId(UUID impliedResourceId, UUID participantId);
 }

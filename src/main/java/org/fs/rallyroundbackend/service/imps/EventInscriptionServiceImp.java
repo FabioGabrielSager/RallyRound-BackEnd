@@ -121,9 +121,11 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
         EventInscriptionEntity eventInscription = eventInscriptionOptional.get();
 
         if (!eventInscription.getStatus()
-                .equals(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE)) {
+                .equals(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE)
+                && !eventInscription.getStatus()
+                .equals(EventInscriptionStatus.CANCELED)) {
             throw new EventInscriptionStateChangeException("Business rule violation. You can't complete an " +
-                    "event inscription that is not in the state of INCOMPLETE_MISSING_HOUR_VOTE.");
+                    "event inscription that is not in the state of INCOMPLETE_MISSING_HOUR_VOTE or CANCELED.");
         }
 
 
@@ -163,7 +165,7 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
         // Check if the participant limit was reached
         int eventParticipantsCount = eventEntity.isEventCreatorParticipant()
                 ? eventEntity.getEventParticipants().size() : eventEntity.getEventParticipants().size() - 1;
-        if(eventEntity.getParticipantsLimit() == eventParticipantsCount) {
+        if (eventEntity.getParticipantsLimit() == eventParticipantsCount) {
 
             // If the participant limit was reached, calculate the event start
             // time based on the participant's time votes.
@@ -233,27 +235,58 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
 
         String paymentLink = "";
 
-        if(eventInscription.getStatus().equals(EventInscriptionStatus.INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE)) {
+        if (eventInscription.getStatus().equals(EventInscriptionStatus.INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE)) {
             paymentLink = eventInscription.getPaymentLink();
         }
 
         return new EventInscriptionPaymentLinkDto(paymentLink);
     }
 
+    @Override
+    @Transactional
+    public EventInscriptionResultDto cancelEventInscription(UUID eventId, String userEmail) {
+        ParticipantEntity joiningParticipant = this.participantRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
+
+        Optional<EventInscriptionEntity> eventInscriptionOptional = joiningParticipant.getEventInscriptions()
+                .stream().filter(ei -> ei.getEvent().getId().equals(eventId)).findFirst();
+
+        if (eventInscriptionOptional.isEmpty()) {
+            throw new EntityNotFoundException("Event inscription doesn't founded.");
+        }
+
+        EventInscriptionEntity eventInscription = eventInscriptionOptional.get();
+
+        if (!eventInscription.getStatus()
+                .equals(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE)
+                && !eventInscription.getStatus()
+                .equals(EventInscriptionStatus.INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE)) {
+            throw new EventInscriptionStateChangeException("Business rule violation. You can't cancel an " +
+                    "event inscription that is not in the state of INCOMPLETE_MISSING_HOUR_VOTE or " +
+                    "INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE.");
+        }
+
+        eventInscription.setStatus(EventInscriptionStatus.CANCELED);
+
+        this.participantRepository.save(joiningParticipant);
+
+        return new EventInscriptionResultDto(eventId, EventInscriptionStatus.CANCELED);
+    }
+
     private Time getMostVotedTime(EventEntity eventEntity, HashMap<Time, Integer> timeVotes) {
         Time mostSelectedStartTime = eventEntity.getEventSchedules().get(0).getSchedule().getStartingHour();
         Integer maxCount = 0;
-        for(Map.Entry<Time, Integer> entry : timeVotes.entrySet()) {
+        for (Map.Entry<Time, Integer> entry : timeVotes.entrySet()) {
             Time time = entry.getKey();
             Integer count = entry.getValue();
 
-            if(count > maxCount) {
+            if (count > maxCount) {
                 mostSelectedStartTime = time;
                 maxCount = count;
-            } else if(count.equals(maxCount)) {
+            } else if (count.equals(maxCount)) {
                 // If there is a tie vote, randomly select one of the two times
                 Random random = new Random();
-                if(random.nextBoolean()) {
+                if (random.nextBoolean()) {
                     mostSelectedStartTime = time;
                 }
             }
@@ -262,20 +295,20 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
     }
 
     private void validateEventStateForRegistration(EventEntity eventEntity) {
-        if(eventEntity.getState().equals(EventState.READY_TO_START)
+        if (eventEntity.getState().equals(EventState.READY_TO_START)
                 || eventEntity.getState().equals(EventState.SOON_TO_START)) {
             throw new EventStateException("The event is already full and no more registrations are allowed.");
         }
 
-        if(eventEntity.getState().equals(EventState.IN_PROCESS)) {
+        if (eventEntity.getState().equals(EventState.IN_PROCESS)) {
             throw new EventStateException("The event is already started. No registrations are allowed.");
         }
 
-        if(eventEntity.getState().equals(EventState.FINALIZED)) {
+        if (eventEntity.getState().equals(EventState.FINALIZED)) {
             throw new EventStateException("The event is finalized. No registrations are allowed.");
         }
 
-        if(eventEntity.getState().equals(EventState.CANCELED)) {
+        if (eventEntity.getState().equals(EventState.CANCELED)) {
             throw new EventStateException("The event is canceled. No registrations are allowed.");
         }
     }

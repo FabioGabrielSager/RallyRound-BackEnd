@@ -73,4 +73,9 @@ public class ParticipantNotificationServiceImp implements ParticipantNotificatio
 
         return this.modelMapper.map(notification, ParticipantNotificationResponse.class);
     }
+
+    @Override
+    public void removeEventsNotifications(UUID eventId, UUID participantId) {
+        this.notificationRepository.deleteAllByImpliedResourceIdAndParticipantId(eventId, participantId);
+    }
 }

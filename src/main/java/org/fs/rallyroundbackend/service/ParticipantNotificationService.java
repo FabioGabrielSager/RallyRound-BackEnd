@@ -11,4 +11,5 @@ public interface ParticipantNotificationService {
     void sendNotification(@Validated ParticipantNotificationDto notification, UUID participantId);
     List<ParticipantNotificationResponse> getNotViewedParticipantNotifications(String participantEmail);
     ParticipantNotificationResponse markNotificationAsViewed(UUID notificationId, String participantEmail);
+    void removeEventsNotifications(UUID eventId, UUID participantId);
 }

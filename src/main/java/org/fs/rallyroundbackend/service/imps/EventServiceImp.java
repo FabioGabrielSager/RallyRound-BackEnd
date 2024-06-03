@@ -523,7 +523,9 @@ public class EventServiceImp implements EventService {
 
         Optional<EventInscriptionEntity> eventInscriptionOptional = participant.getEventInscriptions()
                 .stream()
-                .filter(ei -> ei.getEvent().getId() == eventEntity.getId())
+                .filter(ei -> ei.getEvent().getId() == eventEntity.getId() 
+                        && ei.getStatus() != EventInscriptionStatus.CANCELED
+                        && ei.getStatus() != EventInscriptionStatus.REJECTED)
                 .findFirst();
 
         if (eventInscriptionOptional.isEmpty()) {

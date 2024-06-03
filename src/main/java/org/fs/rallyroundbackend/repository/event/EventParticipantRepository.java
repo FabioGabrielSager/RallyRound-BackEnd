@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface EventParticipantRepository extends JpaRepository<EventParticipantEntity, UUID> {
     Optional<EventParticipantEntity> findByParticipantIdAndEventId(UUID participantId, UUID eventId);
+    void deleteByParticipantIdAndEventId(UUID participantId, UUID eventId);
 }

@@ -44,10 +44,10 @@ public class EventParticipantEntity {
     private boolean isEventCreator;
 
     @OneToOne(mappedBy = "eventParticipant")
-    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private ScheduleVoteEntity scheduleVote;
 
     @OneToOne(mappedBy = "eventParticipant")
-    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE })
+    @Cascade({ CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private EventFeedbackEntity feedback;
 }

@@ -40,4 +40,6 @@ public interface EventInscriptionService {
      *         @code INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE.
      */
     EventInscriptionPaymentLinkDto getEventInscriptionPaymentLink(UUID eventId, String userEmail);
+
+    EventInscriptionResultDto cancelEventInscription(UUID eventId, String userEmail);
 }

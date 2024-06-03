@@ -69,6 +69,14 @@ public class ParticipantController {
         return ResponseEntity.ok(this.eventInscriptionService.completeEventInscription(eventId, userEmail, hourVote));
     }
 
+    @DeleteMapping("/events/{eventId}/inscriptions/cancel")
+    public ResponseEntity<EventInscriptionResultDto> cancelEventInscription(@PathVariable UUID eventId,
+                                                                            HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.eventInscriptionService.cancelEventInscription(eventId, userEmail));
+    }
+
     @GetMapping("/events/{eventId}/inscriptions/paymentlink")
     public ResponseEntity<EventInscriptionPaymentLinkDto> retrieveInscriptionPaymentLink(@PathVariable UUID eventId,
                                                                                          HttpServletRequest request) {
@@ -138,6 +146,15 @@ public class ParticipantController {
         return ResponseEntity.ok(this.eventService.findParticipantCreatedEventById(userEmail, id));
     }
 
+    @DeleteMapping("/events/{id}/leave/")
+    public ResponseEntity<Void> leaveEvent(@PathVariable UUID id, HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        this.participantService.removeParticipantFromAnEvent(userEmail, id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @GetMapping("public/{userId}")
     public ResponseEntity<UserPublicDataDto> getUserPublicData(@PathVariable UUID userId) {
         return ResponseEntity.ok(participantService.getParticipantPublicData(userId));
@@ -196,8 +213,7 @@ public class ParticipantController {
     }
 
     @GetMapping("notifications/")
-    public ResponseEntity<List<ParticipantNotificationResponse>> getParticipantNotifications(HttpServletRequest request)
-    {
+    public ResponseEntity<List<ParticipantNotificationResponse>> getParticipantNotifications(HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.participantNotificationService.getNotViewedParticipantNotifications(userEmail));
@@ -205,7 +221,7 @@ public class ParticipantController {
 
     @PatchMapping("notifications/{id}/viewed")
     public ResponseEntity<ParticipantNotificationResponse> markNotificationAsViewed(@PathVariable(value = "id")
-                                                                                        UUID notificationId,
+                                                                                    UUID notificationId,
                                                                                     HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
         return ResponseEntity

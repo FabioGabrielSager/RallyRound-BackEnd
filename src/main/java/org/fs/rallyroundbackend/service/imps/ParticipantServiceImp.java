@@ -6,29 +6,39 @@ import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
+import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
+import org.fs.rallyroundbackend.entity.events.EventEntity;
+import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
+import org.fs.rallyroundbackend.entity.events.EventState;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 import org.fs.rallyroundbackend.entity.users.participant.ReportEntity;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
+import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
+import org.fs.rallyroundbackend.exception.event.inscriptions.ParticipantNotInscribedException;
 import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
 import org.fs.rallyroundbackend.repository.chat.PrivateChatRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
+import org.fs.rallyroundbackend.repository.event.EventParticipantRepository;
+import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.user.participant.FavoriteActivityRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ReportRepository;
 import org.fs.rallyroundbackend.service.LocationService;
+import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,15 +69,15 @@ public class ParticipantServiceImp implements ParticipantService {
     private final BingMapApiClient bingMapApiClient;
     private final LocationService locationService;
     private final ActivityRepository activityRepository;
-
-
-
     private final ReportRepository reportRepository;
     private final PrivateChatRepository privateChatRepository;
     private final MPAuthTokenRepository mpAuthTokenRepository;
     private final EventInscriptionRepository eventInscriptionRepository;
     private final FavoriteActivityRepository favoriteActivityRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EventParticipantRepository eventParticipantRepository;
+    private final EventRepository eventRepository;
+    private final ParticipantNotificationService participantNotificationService;
 
     @Override
     public UserPublicDataDto getParticipantPublicData(UUID userId) {
@@ -321,5 +331,63 @@ public class ParticipantServiceImp implements ParticipantService {
         participant.setEnabled(false);
 
         this.participantRepository.save(participant);
+    }
+
+    @Override
+    @Transactional
+    public void removeParticipantFromAnEvent(String participantEmail, UUID eventId) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(participantEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Participant with email " + participantEmail + " not found"));
+
+        EventEntity event = this.eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Event not found"));
+
+        if(event.getState() != EventState.READY_TO_START) {
+            throw new EventStateException("Business rule violation. You can't remove a participant from an event " +
+                    "that is not in the state WAITING_FOR_PARTICIPANTS");
+        }
+
+        EventInscriptionEntity eventInscription = participant.getEventInscriptions()
+                .stream()
+                .filter(ei -> ei.getEvent().getId().equals(eventId)
+                        && ei.getStatus().equals(EventInscriptionStatus.ACCEPTED)).findFirst()
+                .orElseThrow(ParticipantNotInscribedException::new);
+
+        eventInscription.setStatus(EventInscriptionStatus.CANCELED);
+        this.eventInscriptionRepository.save(eventInscription);
+
+        EventParticipantEntity eventParticipant = this.eventParticipantRepository
+                .findByParticipantIdAndEventId(participant.getId(), eventId)
+                .orElseThrow(ParticipantNotInscribedException::new);
+
+        event.getEventParticipants().remove(eventParticipant);
+        this.eventParticipantRepository.delete(eventParticipant);
+
+        this.participantNotificationService.removeEventsNotifications(eventId, participant.getId());
+
+        if(event.getState() == EventState.READY_TO_START) {
+            event.setState(EventState.WAITING_FOR_PARTICIPANTS);
+            this.eventRepository.save(event);
+        }
+
+        ParticipantNotificationDto participantNotification = ParticipantNotificationDto
+                .builder()
+                .type(ParticipantNotificationType.EVENT_STATE_UPDATE)
+                .impliedResourceId(event.getId())
+                .title("Abandono de partcipante.")
+                .message(String.format("Un participante ha abandonado el evento de %s organizado para el dia %s.",
+                        event.getActivity().getName(), event.getDate()))
+                .build();
+
+        event.getEventParticipants().forEach(ep -> {
+            if(!ep.getParticipant().getId().equals(participant.getId())) {
+                participantNotification.setParticipantEventCreated(ep.isEventCreator());
+
+                this.participantNotificationService.sendNotification(participantNotification,
+                        ep.getParticipant().getId());
+            }
+        });
     }
 }
