@@ -346,9 +346,9 @@ public class ParticipantServiceImp implements ParticipantService {
         EventEntity event = this.eventRepository.findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found"));
 
-        if(event.getState() != EventState.READY_TO_START) {
+        if(event.getState() != EventState.READY_TO_START && event.getState() != EventState.WAITING_FOR_PARTICIPANTS) {
             throw new EventStateException("Business rule violation. You can't remove a participant from an event " +
-                    "that is not in the state WAITING_FOR_PARTICIPANTS");
+                    "that is not in the state WAITING_FOR_PARTICIPANTS or READY_TO_START.");
         }
 
         EventInscriptionEntity eventInscription = participant.getEventInscriptions()
