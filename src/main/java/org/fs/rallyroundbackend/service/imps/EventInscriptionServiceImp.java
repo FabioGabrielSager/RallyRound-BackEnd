@@ -112,7 +112,8 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
                 .orElseThrow(() -> new EntityNotFoundException("Event not found."));
 
         Optional<EventInscriptionEntity> eventInscriptionOptional = joiningParticipant.getEventInscriptions()
-                .stream().filter(ei -> ei.getEvent().getId().equals(eventId)).findFirst();
+                .stream().filter(ei -> ei.getEvent().getId().equals(eventId) &&
+                        ei.getStatus().equals(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE)).findFirst();
 
         if (eventInscriptionOptional.isEmpty()) {
             throw new EntityNotFoundException("Event inscription doesn't founded.");
@@ -225,7 +226,8 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
 
         Optional<EventInscriptionEntity> eventInscriptionOptional = joiningParticipant.getEventInscriptions()
-                .stream().filter(ei -> ei.getEvent().getId().equals(eventId)).findFirst();
+                .stream().filter(ei -> ei.getEvent().getId().equals(eventId) &&
+                        ei.getStatus().equals(EventInscriptionStatus.ACCEPTED)).findFirst();
 
         if (eventInscriptionOptional.isEmpty()) {
             throw new EntityNotFoundException("Event inscription doesn't founded.");
@@ -249,7 +251,10 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
 
         Optional<EventInscriptionEntity> eventInscriptionOptional = joiningParticipant.getEventInscriptions()
-                .stream().filter(ei -> ei.getEvent().getId().equals(eventId)).findFirst();
+                .stream().filter(ei -> ei.getEvent().getId().equals(eventId) &&
+                        (ei.getStatus().equals(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE)
+                                || ei.getStatus().equals(EventInscriptionStatus.INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE)))
+                .findFirst();
 
         if (eventInscriptionOptional.isEmpty()) {
             throw new EntityNotFoundException("Event inscription doesn't founded.");
