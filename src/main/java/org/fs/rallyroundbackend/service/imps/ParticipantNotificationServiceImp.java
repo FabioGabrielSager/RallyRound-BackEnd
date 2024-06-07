@@ -49,7 +49,8 @@ public class ParticipantNotificationServiceImp implements ParticipantNotificatio
 
         this.participantRepository.save(participant);
         this.messagingTemplate
-                .convertAndSendToUser(String.valueOf(participantId), "/queue/notification", notification);
+                .convertAndSendToUser(String.valueOf(participantId), "/queue/notification",
+                        this.modelMapper.map(notificationEntity, ParticipantNotificationResponse.class));
     }
 
     @Override
