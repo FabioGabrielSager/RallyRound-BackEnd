@@ -7,8 +7,10 @@ import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
@@ -41,6 +43,8 @@ import org.fs.rallyroundbackend.service.LocationService;
 import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.fs.rallyroundbackend.service.ParticipantService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -391,5 +395,53 @@ public class ParticipantServiceImp implements ParticipantService {
                         ep.getParticipant().getId());
             }
         });
+    }
+
+    @Override
+    public SearchedParticipantResult searchParticipant(String requesterEmail, String query, Integer page, Integer limit) {
+
+        Pageable pageable = PageRequest.of(page == null ? 0 : page-1, limit == null ? 5 : limit);
+
+        List<ParticipantEntity> matchesPage = this.participantRepository
+                .findByNameOrLastName(query, query, requesterEmail,
+                        pageable);
+        int totalMatchesCount = this.participantRepository
+                .countALlByNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseAndEmailNot(query, query,
+                        requesterEmail);
+
+        return SearchedParticipantResult
+                .builder()
+                .matches(List.of(this.modelMapper.map(matchesPage, ParticipantResume[].class)))
+                .totalMatches(totalMatchesCount)
+                .limit(limit == null ? 5 : limit)
+                .page(page == null ? 0 : page)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void inviteUserToEvent(UUID eventId, UUID userId, String eventCreatorEmail) {
+        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(eventCreatorEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "Participant with email " + eventCreatorEmail + " not found"));
+
+        this.eventRepository.findEventByIdAndEventCreator(participant.getId(), eventId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                                        String.format("The event creator with email %s doesn't have an event with id %s"
+                                                , eventCreatorEmail, eventId)));
+
+
+        ParticipantNotificationDto invitation = ParticipantNotificationDto.builder()
+                .type(ParticipantNotificationType.EVENT_INVITATION)
+                .impliedResourceId(eventId)
+                .title("Invitación a evento")
+                .isParticipantEventCreated(false)
+                .message(String.format("El usuario %s, %s te ha invitado a un evento",
+                        participant.getLastName(),
+                        participant.getName()))
+                .build();
+
+        this.participantNotificationService.sendEventInvitation(invitation, userId);
     }
 }

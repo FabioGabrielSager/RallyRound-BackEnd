@@ -21,6 +21,8 @@ public interface ParticipantNotificationRepository extends JpaRepository<Partici
             "WHERE p.email = :participantEmail AND n.id = :notificationId")
     Optional<ParticipantNotificationEntity> findParticipantNotification(UUID notificationId, String participantEmail);
 
+    boolean existsByImpliedResourceIdAndParticipantId(UUID impliedResourceId, UUID participantId);
+
     @Modifying
     @Query("DELETE FROM ParticipantNotificationEntity WHERE impliedResourceId=:impliedResourceId " +
             "AND participant.id=:participantId")

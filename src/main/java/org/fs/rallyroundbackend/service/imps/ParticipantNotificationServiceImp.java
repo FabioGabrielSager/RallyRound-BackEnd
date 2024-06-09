@@ -6,6 +6,8 @@ import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationResponse;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationEntity;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
+import org.fs.rallyroundbackend.exception.common.RallyRoundApiException;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantNotificationRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.ParticipantNotificationService;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,27 +31,32 @@ public class ParticipantNotificationServiceImp implements ParticipantNotificatio
     @Override
     @Transactional
     public void sendNotification(ParticipantNotificationDto notification, UUID participantId) {
-        ParticipantEntity participant = this.participantRepository.findById(participantId)
-                .orElseThrow(() -> new EntityNotFoundException("Participant with id " + participantId + " not found"));
+        ParticipantNotificationEntity notificationEntity = this.notificationDtoToEntity(notification, participantId);
 
-        ParticipantNotificationEntity notificationEntity = this.modelMapper
-                .map(notification, ParticipantNotificationEntity.class);
+        this.notificationRepository.save(notificationEntity);
 
-        notificationEntity.setId(null);
-        notificationEntity.setTimestamp(LocalDateTime.now());
-        notificationEntity.setViewed(false);
-        notificationEntity.setParticipant(participant);
+        this.sendNotification(participantId,
+                this.modelMapper.map(notificationEntity, ParticipantNotificationResponse.class));
+    }
 
-        if (participant.getNotifications() == null) {
-            participant.setNotifications(new ArrayList<>());
+    @Override
+    @Transactional
+    public void sendEventInvitation(ParticipantNotificationDto notification, UUID participantId) {
+        if(notification.getType() != ParticipantNotificationType.EVENT_INVITATION) {
+            throw new RuntimeException("The notification type must be EVENT_INVITATION");
         }
 
-        participant.getNotifications().add(notificationEntity);
+        if(notificationRepository
+                .existsByImpliedResourceIdAndParticipantId(notification.getImpliedResourceId(), participantId)) {
+            throw new RallyRoundApiException("Event invitations can only be sent once per participant.");
+        }
 
-        this.participantRepository.save(participant);
-        this.messagingTemplate
-                .convertAndSendToUser(String.valueOf(participantId), "/queue/notification",
-                        this.modelMapper.map(notificationEntity, ParticipantNotificationResponse.class));
+        ParticipantNotificationEntity notificationEntity = this.notificationDtoToEntity(notification, participantId);
+
+        this.notificationRepository.save(notificationEntity);
+
+        this.sendNotification(participantId,
+                this.modelMapper.map(notificationEntity, ParticipantNotificationResponse.class));
     }
 
     @Override
@@ -78,5 +84,27 @@ public class ParticipantNotificationServiceImp implements ParticipantNotificatio
     @Override
     public void removeEventsNotifications(UUID eventId, UUID participantId) {
         this.notificationRepository.deleteAllByImpliedResourceIdAndParticipantId(eventId, participantId);
+    }
+
+    private ParticipantNotificationEntity notificationDtoToEntity(ParticipantNotificationDto notificationDto,
+                                                                  UUID participantId) {
+        ParticipantEntity participant = this.participantRepository.findById(participantId)
+                .orElseThrow(() -> new EntityNotFoundException("Participant with id " + participantId + " not found"));
+
+        ParticipantNotificationEntity notificationEntity = this.modelMapper
+                .map(notificationDto, ParticipantNotificationEntity.class);
+
+        notificationEntity.setId(null);
+        notificationEntity.setTimestamp(LocalDateTime.now());
+        notificationEntity.setViewed(false);
+        notificationEntity.setParticipant(participant);
+
+        return notificationEntity;
+    }
+
+    private void sendNotification(UUID participantId, ParticipantNotificationResponse notification) {
+        this.messagingTemplate
+                .convertAndSendToUser(String.valueOf(participantId), "/queue/notification",
+                        notification);
     }
 }

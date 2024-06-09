@@ -15,6 +15,7 @@ import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRe
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationResponse;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
@@ -146,6 +147,18 @@ public class ParticipantController {
         return ResponseEntity.ok(this.eventService.findParticipantCreatedEventById(userEmail, id));
     }
 
+    @PostMapping("event/{id}/created/invite/{userId}")
+    public ResponseEntity<Void> inviteUserToEvent(
+            @PathVariable(value = "id") UUID eventId,
+            @PathVariable UUID userId,
+            HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        this.participantService.inviteUserToEvent(eventId, userId, userEmail);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @DeleteMapping("/events/{id}/leave/")
     public ResponseEntity<Void> leaveEvent(@PathVariable UUID id, HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
@@ -226,5 +239,15 @@ public class ParticipantController {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
         return ResponseEntity
                 .ok(this.participantNotificationService.markNotificationAsViewed(notificationId, userEmail));
+    }
+
+    @GetMapping("search/{query}")
+    public ResponseEntity<SearchedParticipantResult> searchParticipant(@PathVariable String query,
+                                                                       @RequestParam(required = false) Integer page,
+                                                                       @RequestParam(required = false) Integer limit,
+                                                                       HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.participantService.searchParticipant(userEmail, query, page, limit));
     }
 }

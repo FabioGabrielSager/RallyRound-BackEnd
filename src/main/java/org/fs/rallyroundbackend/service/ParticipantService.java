@@ -3,6 +3,7 @@ package org.fs.rallyroundbackend.service;
 import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,4 +60,8 @@ public interface ParticipantService {
     void deleteParticipantAccount(String userEmail, String password);
 
     void removeParticipantFromAnEvent(String participantEmail, UUID eventId);
+
+    SearchedParticipantResult searchParticipant(String requesterEmail, String query, Integer page, Integer limit);
+
+    void inviteUserToEvent(UUID eventId, UUID userId, String eventCreatorEmail);
 }
