@@ -27,4 +27,17 @@ public interface ParticipantRepository extends JpaRepository<ParticipantEntity, 
             "WHERE (p.name LIKE %:name% OR p.lastName LIKE %:lastName%) AND p.email != :email")
     int countALlByNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseAndEmailNot(String name, String lastName,
                                                                                     String email);
+
+    @Query(
+            "SELECT p.id, p.name, p.lastName, p.profilePhoto, COUNT(DISTINCT e) finalized_events_count FROM ParticipantEntity p " +
+                    "JOIN EventParticipantEntity ep ON p=ep.participant " +
+                    "JOIN EventEntity e ON ep.event=e " +
+                    "WHERE ep.isEventCreator IS TRUE AND e.state = 'FINALIZED' " +
+                    "   AND (:month IS NOT NULL AND MONTH(e.date) = :month OR :month IS NULL AND MONTH(e.date) = MONTH(current_date)-1) " +
+                    "   AND YEAR(e.date) = YEAR(current_date) " +
+                    "GROUP BY p.id, p.name, p.lastName, p.profilePhoto " +
+                    "ORDER BY finalized_events_count DESC " +
+                    "LIMIT :topSize"
+    )
+    List<Object[]> getTopEventCreators(short topSize, int month);
 }

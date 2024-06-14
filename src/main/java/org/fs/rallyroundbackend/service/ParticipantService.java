@@ -4,6 +4,7 @@ import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRe
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
+import org.fs.rallyroundbackend.dto.participant.TopEventCreatorsResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,4 +65,6 @@ public interface ParticipantService {
     SearchedParticipantResult searchParticipant(String requesterEmail, String query, Integer page, Integer limit);
 
     void inviteUserToEvent(UUID eventId, UUID userId, String eventCreatorEmail);
+
+    TopEventCreatorsResponse getEventCreatorsTop(short topSize, Byte month);
 }

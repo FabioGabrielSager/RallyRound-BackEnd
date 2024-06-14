@@ -17,6 +17,7 @@ import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationResponse;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
 import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
+import org.fs.rallyroundbackend.dto.participant.TopEventCreatorsResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
 import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
@@ -258,5 +259,10 @@ public class ParticipantController {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.participantService.searchParticipant(userEmail, query, page, limit));
+    }
+
+    @GetMapping("top/five/event-creators")
+    public ResponseEntity<TopEventCreatorsResponse> getTopFiveEventCreators(@RequestParam(required = false) Byte month) {
+        return ResponseEntity.ok(this.participantService.getEventCreatorsTop((short) 5, month));
     }
 }

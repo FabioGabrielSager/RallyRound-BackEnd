@@ -5,14 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
-import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
-import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
-import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
-import org.fs.rallyroundbackend.dto.participant.ReportRequest;
-import org.fs.rallyroundbackend.dto.participant.ReportResponse;
-import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
-import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
-import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
+import org.fs.rallyroundbackend.dto.participant.*;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
@@ -443,5 +436,30 @@ public class ParticipantServiceImp implements ParticipantService {
                 .build();
 
         this.participantNotificationService.sendEventInvitation(invitation, userId);
+    }
+
+    @Override
+    public TopEventCreatorsResponse getEventCreatorsTop(short topSize, Byte month) {
+        byte validMonth = (byte) LocalDate.now().getMonth().getValue();
+
+        if(month != null && month < 13 && month > 0) {
+            validMonth = month;
+        }
+
+        List<Object[]> creatorsTopData = this.participantRepository.getTopEventCreators(topSize, validMonth);
+
+        TopEventCreatorsResponse top = new TopEventCreatorsResponse(topSize, new ArrayList<>());
+
+        top.setEventCreators(
+                creatorsTopData.stream().map(
+                        result -> {
+                            ParticipantResume creator =
+                                    new ParticipantResume((UUID) result[0], (String) result[1], (byte[]) result[3]);
+                            return new TopEventCreatorResponse(creator, (long) result[4]);
+                        }
+                ).toList()
+        );
+
+        return top;
     }
 }
