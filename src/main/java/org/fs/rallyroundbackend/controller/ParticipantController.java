@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.dto.event.inscription.CreatedEventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionPaymentLinkDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
@@ -145,6 +146,14 @@ public class ParticipantController {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.eventService.findParticipantCreatedEventById(userEmail, id));
+    }
+
+    @GetMapping("/events/{id}/created/feedback")
+    public ResponseEntity<EventFeedbackStatistics> findParticipantCreatedEventFeedback(@PathVariable UUID id,
+                                                                                       HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        return ResponseEntity.ok(this.eventService.getEventFeedbackResume(id, userEmail));
     }
 
     @PostMapping("event/{id}/created/invite/{userId}")

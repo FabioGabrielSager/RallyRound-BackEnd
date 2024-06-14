@@ -4,18 +4,19 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
-import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
-import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
+import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
 import org.fs.rallyroundbackend.entity.chats.ChatType;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
@@ -611,6 +612,42 @@ public class EventServiceImp implements EventService {
 
         return new EventFeedbackResponse(eventParticipantEntity.getFeedback().getId(),
                 "Feedback submitted successfully");
+    }
+
+    @Override
+    public EventFeedbackStatistics getEventFeedbackResume(UUID eventId, String creatorEmail) {
+        UUID creatorId = this.participantRepository.findEnabledUserByEmail(creatorEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + creatorEmail + " not found."))
+                .getId();
+
+        if(!this.eventRepository.existsById(eventId)) {
+            throw new EntityNotFoundException("Event not found");
+        }
+
+        if(this.eventRepository.isUserTheEventCreator(creatorId, eventId)) {
+            throw new AccessDeniedException("Only an event creator can requests the statistics of their events.");
+        }
+
+        List<Object[]> commentsData = this.eventRepository.getEventCommentData(eventId);
+
+        List<EventComment> comments = commentsData.stream()
+                .map(result -> {
+                    String comment = (String) result[0];
+                    UUID participantId = (UUID) result[1];
+                    String participantName = (String) result[2];
+                    byte[] profilePhoto = (byte[]) result[3];
+
+                    ParticipantResume participantResume = new ParticipantResume(participantId, participantName, profilePhoto);
+                    return new EventComment(comment, participantResume);
+                }).toList();
+
+
+        EventFeedbackStatistics statistics = this.eventRepository.getEventFeedbackStatistics(eventId)
+                .orElse(new EventFeedbackStatistics());
+
+        statistics.setComments(comments);
+
+        return statistics;
     }
 
     @Override

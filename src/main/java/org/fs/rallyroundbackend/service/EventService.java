@@ -2,8 +2,6 @@ package org.fs.rallyroundbackend.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
-import org.fs.rallyroundbackend.dto.event.EventFeedbackRequest;
-import org.fs.rallyroundbackend.dto.event.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
@@ -11,6 +9,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
@@ -153,6 +152,8 @@ public interface EventService {
      * xby the given user.
      */
     EventFeedbackResponse submitFeedback(EventFeedbackRequest feedbackRequest, String userEmail);
+
+    EventFeedbackStatistics getEventFeedbackResume(UUID eventId, String creatorEmail);
 
     void cancelEvent(UUID eventId, String creatorEmail);
 

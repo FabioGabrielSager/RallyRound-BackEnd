@@ -1,5 +1,7 @@
 package org.fs.rallyroundbackend.repository.event;
 
+import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventState;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -101,12 +104,56 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             @Param("dateTo") LocalDate dateTo,
             @Param("hours") List<Time> hours
     );
-
-    List<EventEntity> findAllByStateInAndNextStateTransitionBefore(EventState[] states, LocalDateTime dateTime);
+    List<EventEntity> findAllByStateInAndNextStateTransitionBefore(EventState[] state, LocalDateTime nextStateTransition);
 
     @Query("SELECT e FROM EventEntity AS e " +
             "JOIN EventParticipantEntity AS ep ON e=ep.event " +
             "JOIN ParticipantEntity AS p ON p=ep.participant " +
             "WHERE e.id = :eventId AND ep.isEventCreator=true AND p.id = :eventCreatorId")
     Optional<EventEntity> findEventByIdAndEventCreator(UUID eventCreatorId, UUID eventId);
+
+    @Query(
+            "SELECT new org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics(" +
+                    ":eventId, " +
+                    "COUNT(ef), " +
+                    "COALESCE(AVG(ef.overallSatisfaction), 0), " +
+                    "COALESCE(AVG(ef.organizationRating), 0), " +
+                    "COALESCE(AVG(ef.contentQualityRating), 0), " +
+                    "COALESCE(AVG(ef.venueRating), 0), " +
+                    "COALESCE(AVG(ef.coordinatorsRating), 0), " +
+                    "COALESCE(AVG(ef.valueForMoneyRating), 0)) " +
+                    "FROM EventEntity e " +
+                    "JOIN EventParticipantEntity ep ON e.id = ep.event.id " +
+                    "JOIN EventFeedbackEntity ef ON ep.feedback.id = ef.id " +
+                    "WHERE e.id = :eventId"
+    )
+    Optional<EventFeedbackStatistics> getEventFeedbackStatistics(UUID eventId);
+
+    @Query(
+            "SELECT ef.comments, ep.participant.id, ep.participant.name, ep.participant.profilePhoto " +
+                    "FROM EventEntity e " +
+                    "JOIN EventParticipantEntity ep ON e.id = ep.event.id " +
+                    "JOIN EventFeedbackEntity ef ON ep.feedback.id = ef.id " +
+                    "WHERE e.id = :eventId"
+    )
+    List<Object[]> getEventCommentData(UUID eventId);
+
+    // TODO: Find out why this query works the opposite way it should work
+    /**
+     * Yes, the case in this query is the opposite of it should be, but it works fine, i don't understand why.
+     * The original query is:
+     * SELECT case when count(event_id) > 0 then true else false end FROM events e
+     *     join events_participants ep on e.id=ep.event_id
+     *     join participants p on ep.participant_id=p.id
+     *     WHERE event_id='event_id
+     *       AND p.id='event_id'
+     *       AND ep.is_event_creator IS TRUE
+     * */
+    @Query(
+            "SELECT CASE WHEN COUNT(e) > 0 THEN FALSE ELSE TRUE END " +
+                    "FROM EventEntity e JOIN EventParticipantEntity as ep ON e=ep.event " +
+                    "JOIN ParticipantEntity p ON ep.participant=p " +
+                    "WHERE e.id=:eventId AND ep.isEventCreator IS TRUE AND p.id=:userId"
+    )
+    boolean isUserTheEventCreator(UUID userId, UUID eventId);
 }

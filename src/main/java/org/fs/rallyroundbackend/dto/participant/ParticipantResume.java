@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Base64;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -16,4 +17,11 @@ public class ParticipantResume {
     protected String name;
     @JsonProperty("base64encodedProfileImage")
     protected String profilePhoto;
+
+    public ParticipantResume(UUID participantId, String participantName, byte[] profilePhoto) {
+        this.id = participantId;
+        this.name = participantName;
+        this.profilePhoto = profilePhoto != null ? Base64.getEncoder().encodeToString(profilePhoto) : null;
+    }
+
 }
