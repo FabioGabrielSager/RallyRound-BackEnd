@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.dto.event;
+package org.fs.rallyroundbackend.dto.event.feedback;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

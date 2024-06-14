@@ -12,6 +12,8 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.entity.chats.ChatType;
