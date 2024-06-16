@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
+import org.fs.rallyroundbackend.dto.event.EventFeeStatsDto;
 import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
@@ -158,4 +159,6 @@ public interface EventService {
     void cancelEvent(UUID eventId, String creatorEmail);
 
     EventResponseForEventCreators modifyEvent(EventModificationRequest request, String creatorEmail);
+
+    EventFeeStatsDto getEventsFeeStatsByMonth(LocalDate dateFrom, LocalDate dateTo);
 }

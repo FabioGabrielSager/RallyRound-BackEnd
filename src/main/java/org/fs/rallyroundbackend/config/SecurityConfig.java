@@ -73,6 +73,7 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/mp/payment/done/").permitAll()
 
                                 .requestMatchers("/rr/api/v1/events/**").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/events/fee-stats").hasRole("ADMIN")
 
                                 .requestMatchers("/rr/api/v1/location/autosuggest/places/{query}").permitAll()
                                 .requestMatchers("/rr/api/v1/location/autosuggest/addresses/{query}")

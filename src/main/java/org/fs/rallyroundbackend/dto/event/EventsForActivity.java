@@ -11,6 +11,8 @@ import lombok.Setter;
 @Setter
 public class EventsForActivity {
     private String activity;
+
+    // TODO: Adapt to make use of EventCountSummary class and replace the following fields:
     private long totalEventsCount;
     private long finalizedEventsCount;
     private long canceledEventsCount;

@@ -1,9 +1,11 @@
 package org.fs.rallyroundbackend.repository.event;
 
-import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
+import org.fs.rallyroundbackend.dto.event.EventFeeStatsDto;
+import org.fs.rallyroundbackend.dto.event.EventsCountSummary;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventState;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +14,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -156,4 +157,26 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
                     "WHERE e.id=:eventId AND ep.isEventCreator IS TRUE AND p.id=:userId"
     )
     boolean isUserTheEventCreator(UUID userId, UUID eventId);
+
+    @Query(
+            "SELECT new org.fs.rallyroundbackend.dto.event.EventsCountSummary(" +
+                    "COUNT(DISTINCT e), " +
+                    "SUM(CASE WHEN e.state = 'FINALIZED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN e.state = 'CANCELED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN e.state != 'FINALIZED' AND e.state != 'CANCELED' THEN 1 ELSE 0 END))" +
+                    "FROM EventEntity e " +
+                    "WHERE e.date BETWEEN :dateFrom AND :dateTo AND e.inscriptionPrice > 0"
+    )
+    EventsCountSummary getPaidEventsCountBetweenDateFromAndDateTo(LocalDate dateFrom, LocalDate dateTo);
+
+    @Query(
+            "SELECT new org.fs.rallyroundbackend.dto.event.EventsCountSummary(" +
+                    "COUNT(DISTINCT e), " +
+                    "SUM(CASE WHEN e.state = 'FINALIZED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN e.state = 'CANCELED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN e.state != 'FINALIZED' AND e.state != 'CANCELED' THEN 1 ELSE 0 END))" +
+                    "FROM EventEntity e " +
+                    "WHERE e.date BETWEEN :dateFrom AND :dateTo AND e.inscriptionPrice = 0"
+    )
+    EventsCountSummary getUnPaidEventsCountBetweenDateFromAndDateTo(LocalDate dateFrom, LocalDate dateTo);
 }

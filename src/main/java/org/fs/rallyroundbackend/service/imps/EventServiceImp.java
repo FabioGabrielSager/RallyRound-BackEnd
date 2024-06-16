@@ -3,15 +3,7 @@ package org.fs.rallyroundbackend.service.imps;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
-import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
-import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
-import org.fs.rallyroundbackend.dto.event.EventResponse;
-import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
-import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
-import org.fs.rallyroundbackend.dto.event.EventResumeDto;
-import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.event.EventsForActivity;
-import org.fs.rallyroundbackend.dto.event.EventsForActivityByMonth;
+import org.fs.rallyroundbackend.dto.event.*;
 import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
@@ -688,6 +680,19 @@ public class EventServiceImp implements EventService {
         });
 
         this.eventRepository.save(eventEntity);
+    }
+
+    @Override
+    public EventFeeStatsDto getEventsFeeStatsByMonth(LocalDate dateFrom, LocalDate dateTo) {
+        EventFeeStatsDto eventFeeStatsDto = new EventFeeStatsDto();
+        eventFeeStatsDto.setDateFrom(dateFrom);
+        eventFeeStatsDto.setDateTo(dateTo);
+        eventFeeStatsDto
+                .setPaidEventsCount(this.eventRepository.getPaidEventsCountBetweenDateFromAndDateTo(dateFrom, dateTo));
+        eventFeeStatsDto
+                .setUnpaidEventsCount(this.eventRepository.getUnPaidEventsCountBetweenDateFromAndDateTo(dateFrom, dateTo));
+
+        return eventFeeStatsDto;
     }
 
     private EventResumePageDto fetchEventsWithPagination(

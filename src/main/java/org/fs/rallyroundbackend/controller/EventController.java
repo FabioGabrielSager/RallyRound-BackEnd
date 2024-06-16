@@ -4,12 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.event.CreateEventRequest;
-import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
-import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.EventFeeStatsDto;
 import org.fs.rallyroundbackend.dto.event.EventModificationRequest;
 import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
+import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.HttpStatus;
@@ -100,5 +101,10 @@ public class EventController {
 
         EventFeedbackResponse response = this.eventService.submitFeedback(feedbackRequest, userEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("fee-stats")
+    public ResponseEntity<EventFeeStatsDto> getEventsFeeStats(@RequestParam LocalDate dateFrom, @RequestParam LocalDate dateTo) {
+       return ResponseEntity.ok(this.eventService.getEventsFeeStatsByMonth(dateFrom, dateTo));
     }
 }
