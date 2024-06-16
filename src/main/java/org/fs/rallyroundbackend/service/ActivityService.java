@@ -1,6 +1,7 @@
 package org.fs.rallyroundbackend.service;
 
 import org.fs.rallyroundbackend.dto.activity.MatchedActivities;
+import org.fs.rallyroundbackend.dto.event.EventsForActivityByMonth;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,4 +25,6 @@ public interface ActivityService {
      * @return A {@link MatchedActivities} object containing matching activity names.
      */
     MatchedActivities getMatchingActivitiesNames(String name);
+
+    EventsForActivityByMonth getEventsForActivity(Integer month, String inscriptionFeeType);
 }

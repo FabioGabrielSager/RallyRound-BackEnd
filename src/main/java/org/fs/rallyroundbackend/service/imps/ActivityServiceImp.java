@@ -2,13 +2,14 @@ package org.fs.rallyroundbackend.service.imps;
 
 import jakarta.persistence.EntityExistsException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.fs.rallyroundbackend.dto.activity.MatchedActivities;
+import org.fs.rallyroundbackend.dto.event.EventsForActivityByMonth;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.service.ActivityService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,5 +36,20 @@ public class ActivityServiceImp implements ActivityService {
         return new MatchedActivities(
                 activityEntities.stream().map(ActivityEntity::getName).toList()
         );
+    }
+
+    @Override
+    public EventsForActivityByMonth getEventsForActivity(Integer month, String inscriptionFeeType) {
+        int validMonth = LocalDate.now().getMonth().getValue();
+        if(month != null && month > 1 && month < 13) {
+            validMonth = month;
+        }
+
+        EventsForActivityByMonth result = new EventsForActivityByMonth();
+        result.setMonth(validMonth);
+
+        result.setResults(this.activityRepository.getEventsForActivity(validMonth, inscriptionFeeType));
+
+        return result;
     }
 }

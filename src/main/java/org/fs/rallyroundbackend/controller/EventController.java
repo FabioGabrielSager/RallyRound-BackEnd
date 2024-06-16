@@ -41,7 +41,7 @@ public class EventController {
     @PostMapping("/create/")
     public ResponseEntity<EventResponseForEventCreators> createEvent(@RequestBody @Validated CreateEventRequest eventDto,
                                                                      HttpServletRequest request) {
-        
+
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(this.eventService.createEvent(eventDto, creatorEmail));
@@ -58,7 +58,7 @@ public class EventController {
 
     @PatchMapping("/modify/")
     public ResponseEntity<EventResponseForEventCreators> cancelEvent(@RequestBody EventModificationRequest modificationRequest,
-                                            HttpServletRequest request) {
+                                                                     HttpServletRequest request) {
         String creatorEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 
         return ResponseEntity.ok(this.eventService.modifyEvent(modificationRequest, creatorEmail));
@@ -77,7 +77,7 @@ public class EventController {
             @RequestParam(required = false) @Positive Integer page,
             HttpServletRequest request
     ) {
-        if(dateFrom != null && dateTo != null && (dateFrom.isEqual(dateTo) || dateFrom.isAfter(dateTo))) {
+        if (dateFrom != null && dateTo != null && (dateFrom.isEqual(dateTo) || dateFrom.isAfter(dateTo))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "The dateFrom is equal to or greater than the dateTo");
         }
@@ -94,7 +94,7 @@ public class EventController {
 
     @PostMapping("/feedback/")
     public ResponseEntity<EventFeedbackResponse> submitFeedback(@RequestBody
-                                                                    @Validated EventFeedbackRequest feedbackRequest,
+                                                                @Validated EventFeedbackRequest feedbackRequest,
                                                                 HttpServletRequest request) {
         String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
 

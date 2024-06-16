@@ -10,6 +10,8 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumeDto;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.event.EventsForActivity;
+import org.fs.rallyroundbackend.dto.event.EventsForActivityByMonth;
 import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
