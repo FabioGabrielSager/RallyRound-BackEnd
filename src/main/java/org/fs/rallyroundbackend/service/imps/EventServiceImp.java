@@ -528,6 +528,7 @@ public class EventServiceImp implements EventService {
                 .stream()
                 .filter(ei -> ei.getEvent().getId() == eventEntity.getId() 
                         && ei.getStatus() != EventInscriptionStatus.CANCELED
+                        && ei.getStatus() != EventInscriptionStatus.CANCELED_DUE_TO_ABANDONMENT
                         && ei.getStatus() != EventInscriptionStatus.REJECTED)
                 .findFirst();
 

@@ -354,7 +354,7 @@ public class ParticipantServiceImp implements ParticipantService {
                         && ei.getStatus().equals(EventInscriptionStatus.ACCEPTED)).findFirst()
                 .orElseThrow(ParticipantNotInscribedException::new);
 
-        eventInscription.setStatus(EventInscriptionStatus.CANCELED);
+        eventInscription.setStatus(EventInscriptionStatus.CANCELED_DUE_TO_ABANDONMENT);
         this.eventInscriptionRepository.save(eventInscription);
 
         EventParticipantEntity eventParticipant = this.eventParticipantRepository

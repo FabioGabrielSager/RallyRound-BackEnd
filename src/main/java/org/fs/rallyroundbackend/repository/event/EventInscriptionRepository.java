@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface EventInscriptionRepository extends JpaRepository<EventInscriptionEntity, UUID> {
     @Query("SELECT ei FROM EventInscriptionEntity as ei " +
             "WHERE ei.participant.id = :participantId AND ei.event.id = :eventId " +
-            "AND ei.status != 'CANCELED' AND ei.status != 'REJECTED'")
+            "AND ei.status != 'CANCELED' AND ei.status != 'REJECTED' AND ei.status != 'CANCELED_DUE_TO_ABANDONMENT'")
     Optional<EventInscriptionEntity> findByParticipantIdAndEvent(
             @Param("participantId") UUID participantId,
             @Param("eventId") UUID eventId

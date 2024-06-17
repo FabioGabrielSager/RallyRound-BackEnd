@@ -34,10 +34,10 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             "       AND ep2.participant.id = :excludedParticipantId) AND NOT EXISTS " +
             "   (SELECT 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :excludedParticipantId " +
-            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED')) " +
+            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED' AND ei.status != 'CANCELED_DUE_TO_ABANDONMENT')) " +
             "AND (:participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :participantId " +
-            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED'))  " +
+            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED' AND ei.status != 'CANCELED_DUE_TO_ABANDONMENT'))  " +
             "AND (:eventState IS NULL OR e.state = :eventState) " +
             "AND (:activityName IS NULL OR act.name LIKE :activityName) " +
             "AND (:neighborhood IS NULL OR neigh.name LIKE :neighborhood)" +
@@ -79,11 +79,11 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             "       AND ep2.participant.id = :excludedParticipantId) AND NOT EXISTS " +
             "   (SELECT 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :excludedParticipantId " +
-            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED')) " +
+            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED' AND ei.status != 'CANCELED_DUE_TO_ABANDONMENT')) " +
             "AND (:activityName IS NULL OR act.name LIKE :activityName) " +
             "AND (:participantId IS NULL OR EXISTS (select 1 FROM EventInscriptionEntity ei WHERE ei.event = e " +
             "       AND ei.participant.id = :participantId" +
-            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED'))  " +
+            "       AND ei.status != 'CANCELED' AND ei.status != 'REJECTED' AND ei.status != 'CANCELED_DUE_TO_ABANDONMENT'))  " +
             "AND (:eventState IS NULL OR e.state = :eventState) " +
             "AND (:neighborhood IS NULL OR neigh.name LIKE :neighborhood)" +
             "AND (:locality IS NULL OR loc.name LIKE :locality)" +
