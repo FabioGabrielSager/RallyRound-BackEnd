@@ -83,6 +83,8 @@ public class SecurityConfig {
                                 .requestMatchers("/chat").permitAll()
                                 .requestMatchers("/notification").permitAll()
 
+                                .requestMatchers("/rr/api/v1/documents/terms-and-conditions").permitAll()
+
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
