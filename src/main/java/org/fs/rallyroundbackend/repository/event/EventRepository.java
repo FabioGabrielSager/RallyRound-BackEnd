@@ -1,11 +1,9 @@
 package org.fs.rallyroundbackend.repository.event;
 
-import org.fs.rallyroundbackend.dto.event.EventFeeStatsDto;
 import org.fs.rallyroundbackend.dto.event.EventsCountSummary;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventState;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -179,4 +177,35 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
                     "WHERE e.date BETWEEN :dateFrom AND :dateTo AND e.inscriptionPrice = 0"
     )
     EventsCountSummary getUnPaidEventsCountBetweenDateFromAndDateTo(LocalDate dateFrom, LocalDate dateTo);
+
+    @Query(
+            "SELECT a.name, e.date, COUNT(DISTINCT ei), " +
+                    "SUM(CASE WHEN ei.status = ' INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE' " +
+                    "      OR ei.status = 'INCOMPLETE_MISSING_HOUR_VOTE' THEN 1 ELSE 0 END)," +
+                    "SUM(CASE WHEN ei.status='CANCELED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN ei.status='CANCELED_DUE_TO_ABANDONMENT' THEN 1 ELSE 0 END) " +
+                    "FROM EventParticipantEntity ep JOIN EventEntity e ON ep.event=e " +
+                    "JOIN ActivityEntity a ON e.activity=a " +
+                    "JOIN ParticipantEntity p ON ep.participant=p " +
+                    "JOIN EventInscriptionEntity ei ON ei.event=e " +
+                    "WHERE p.email=:creatorEmail AND ep.isEventCreator IS TRUE " +
+                    "   AND MONTH(e.date)=:month AND YEAR(e.date)=:year " +
+                    "GROUP BY a.id, a.name, e.date"
+    )
+    List<Object[]> getCreatorEventsInscriptionTrendByMonthAndYear(String creatorEmail, int month, int year);
+
+    @Query(
+            "SELECT a.name, e.date, COUNT(DISTINCT ei), " +
+                    "SUM(CASE WHEN ei.status = ' INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE' " +
+                    "      OR ei.status = 'INCOMPLETE_MISSING_HOUR_VOTE' THEN 1 ELSE 0 END)," +
+                    "SUM(CASE WHEN ei.status='CANCELED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN ei.status='CANCELED_DUE_TO_ABANDONMENT' THEN 1 ELSE 0 END) " +
+                    "FROM EventParticipantEntity ep JOIN EventEntity e ON ep.event=e " +
+                    "JOIN ActivityEntity a ON e.activity=a " +
+                    "JOIN ParticipantEntity p ON ep.participant=p " +
+                    "JOIN EventInscriptionEntity ei ON ei.event=e " +
+                    "WHERE MONTH(e.date)=:month AND YEAR(e.date)=:year " +
+                    "GROUP BY a.id, a.name, e.date"
+    )
+    List<Object[]> getEventsInscriptionTrendByMonthAndYear(int month, int year);
 }

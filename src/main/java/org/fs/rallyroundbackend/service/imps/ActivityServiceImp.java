@@ -41,7 +41,7 @@ public class ActivityServiceImp implements ActivityService {
     @Override
     public EventsForActivityByMonth getEventsForActivity(Integer month, String inscriptionFeeType) {
         int validMonth = LocalDate.now().getMonth().getValue();
-        if(month != null && month > 1 && month < 13) {
+        if(month != null && month > 0 && month < 13) {
             validMonth = month;
         }
 

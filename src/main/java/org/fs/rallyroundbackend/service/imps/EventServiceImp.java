@@ -482,6 +482,40 @@ public class EventServiceImp implements EventService {
     }
 
     @Override
+    public EventsInscriptionTrendByMonthAndYear getParticipantCreatedEventsInscriptionTrend(String userEmail, Integer month,
+                                                                                            Integer year) {
+        int validMonth = LocalDate.now().getMonth().getValue();
+        if(month != null && month > 0 && month < 13) {
+            validMonth = month;
+        }
+
+        int validYear = LocalDate.now().getYear();
+        if(year != null) {
+            validYear = year;
+        }
+
+        EventsInscriptionTrendByMonthAndYear result = new EventsInscriptionTrendByMonthAndYear();
+
+        result.setMonth(validMonth);
+        result.setYear(validYear);
+
+        List<Object[]> eventsInscriptionTrends = this.eventRepository
+                .getCreatorEventsInscriptionTrendByMonthAndYear(userEmail, validMonth, validYear);
+
+        result.setResults(eventsInscriptionTrends.stream()
+                .map(e -> new EventInscriptionTrendByEvent(
+                        (String) e[0],
+                        (LocalDate) e[1],
+                        (Long) e[2],
+                        (Long) e[3],
+                        (Long) e[4],
+                        (Long) e[5]
+                )).toList());
+
+        return result;
+    }
+
+    @Override
     @Transactional
     public EventResumePageDto getEventsByParticipant(String participantEmail, LocalDateTime createdAt,
                                                      EventInscriptionStatus status, MPPaymentStatus paymentStatus,

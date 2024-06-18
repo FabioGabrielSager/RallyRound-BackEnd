@@ -8,6 +8,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
+import org.fs.rallyroundbackend.dto.event.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
@@ -78,6 +79,8 @@ public interface EventService {
      * @throws EntityNotFoundException if the specified event is not found.
      */
     EventResponseForEventCreators findParticipantCreatedEventById(String userEmail, UUID eventId);
+
+    EventsInscriptionTrendByMonthAndYear getParticipantCreatedEventsInscriptionTrend(String userEmail, Integer month, Integer year);
 
     /**
      * Retrieves the events created by a specific user based on the provided parameters.
