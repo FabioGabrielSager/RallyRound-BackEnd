@@ -11,6 +11,7 @@ import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByYear;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.JwtService;
 import org.springframework.http.HttpStatus;
@@ -106,5 +107,10 @@ public class EventController {
     @GetMapping("fee-stats")
     public ResponseEntity<EventFeeStatsDto> getEventsFeeStats(@RequestParam LocalDate dateFrom, @RequestParam LocalDate dateTo) {
        return ResponseEntity.ok(this.eventService.getEventsFeeStatsByMonth(dateFrom, dateTo));
+    }
+
+    @GetMapping("inscription-trend/{year}")
+    public ResponseEntity<EventInscriptionTrendByYear> getEventsInscriptionsTrendByYear(@PathVariable int year) {
+        return ResponseEntity.ok(this.eventService.getEventInscriptionTrendByYear(year));
     }
 }

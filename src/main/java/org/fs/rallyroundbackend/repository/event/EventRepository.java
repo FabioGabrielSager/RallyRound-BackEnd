@@ -103,6 +103,7 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
             @Param("dateTo") LocalDate dateTo,
             @Param("hours") List<Time> hours
     );
+
     List<EventEntity> findAllByStateInAndNextStateTransitionBefore(EventState[] state, LocalDateTime nextStateTransition);
 
     @Query("SELECT e FROM EventEntity AS e " +
@@ -138,16 +139,17 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
     List<Object[]> getEventCommentData(UUID eventId);
 
     // TODO: Find out why this query works the opposite way it should work
+
     /**
      * Yes, the case in this query is the opposite of it should be, but it works fine, i don't understand why.
      * The original query is:
      * SELECT case when count(event_id) > 0 then true else false end FROM events e
-     *     join events_participants ep on e.id=ep.event_id
-     *     join participants p on ep.participant_id=p.id
-     *     WHERE event_id='event_id
-     *       AND p.id='event_id'
-     *       AND ep.is_event_creator IS TRUE
-     * */
+     * join events_participants ep on e.id=ep.event_id
+     * join participants p on ep.participant_id=p.id
+     * WHERE event_id='event_id
+     * AND p.id='event_id'
+     * AND ep.is_event_creator IS TRUE
+     */
     @Query(
             "SELECT CASE WHEN COUNT(e) > 0 THEN FALSE ELSE TRUE END " +
                     "FROM EventEntity e JOIN EventParticipantEntity as ep ON e=ep.event " +
@@ -207,5 +209,19 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
                     "WHERE MONTH(e.date)=:month AND YEAR(e.date)=:year " +
                     "GROUP BY a.id, a.name, e.date"
     )
-    List<Object[]> getEventsInscriptionTrendByMonthAndYear(int month, int year);
+    List<Object[]> getEventsInscriptionTrendByMonthAndYearAndEvent(int month, int year);
+
+    @Query(
+            "SELECT MONTH(e.date), COUNT(DISTINCT ei), " +
+                    "SUM(CASE WHEN ei.status = ' INCOMPLETE_MISSING_PAYMENT_AND_HOUR_VOTE' " +
+                    "      OR ei.status = 'INCOMPLETE_MISSING_HOUR_VOTE' THEN 1 ELSE 0 END)," +
+                    "SUM(CASE WHEN ei.status='CANCELED' THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN ei.status='CANCELED_DUE_TO_ABANDONMENT' THEN 1 ELSE 0 END) " +
+                    "FROM EventParticipantEntity ep JOIN EventEntity e ON ep.event=e " +
+                    "JOIN ParticipantEntity p ON ep.participant=p " +
+                    "JOIN EventInscriptionEntity ei ON ei.event=e " +
+                    "WHERE YEAR(e.date)=:year " +
+                    "GROUP BY MONTH(e.date)"
+    )
+    List<Object[]> getEventInscriptionTrendByYear(int year);
 }

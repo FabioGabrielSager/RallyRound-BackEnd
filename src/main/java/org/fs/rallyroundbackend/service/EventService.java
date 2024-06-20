@@ -8,7 +8,8 @@ import org.fs.rallyroundbackend.dto.event.EventResponse;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.event.EventsInscriptionTrendByMonthAndYear;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByYear;
+import org.fs.rallyroundbackend.dto.event.inscription.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
@@ -81,6 +82,8 @@ public interface EventService {
     EventResponseForEventCreators findParticipantCreatedEventById(String userEmail, UUID eventId);
 
     EventsInscriptionTrendByMonthAndYear getParticipantCreatedEventsInscriptionTrend(String userEmail, Integer month, Integer year);
+
+    EventInscriptionTrendByYear getEventInscriptionTrendByYear(int year);
 
     /**
      * Retrieves the events created by a specific user based on the provided parameters.

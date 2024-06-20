@@ -8,6 +8,11 @@ import org.fs.rallyroundbackend.dto.event.feedback.EventComment;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrend;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByEvent;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByMonth;
+import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByYear;
+import org.fs.rallyroundbackend.dto.event.inscription.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
@@ -511,6 +516,30 @@ public class EventServiceImp implements EventService {
                         (Long) e[4],
                         (Long) e[5]
                 )).toList());
+
+        return result;
+    }
+
+    @Override
+    public EventInscriptionTrendByYear getEventInscriptionTrendByYear(int year) {
+
+        EventInscriptionTrendByYear result = new EventInscriptionTrendByYear();
+        result.setYear(year);
+
+        List<Object[]> eventInscriptionsTrendsByYear = this.eventRepository.getEventInscriptionTrendByYear(year);
+
+        result.setTrends(
+                eventInscriptionsTrendsByYear.stream().map(
+                        e -> new EventInscriptionTrendByMonth(
+                                (Integer) e[0],
+                                new EventInscriptionTrend(
+                                        (Long) e[1],
+                                        (Long) e[2],
+                                        (Long) e[3],
+                                        (Long) e[4]
+                                )
+                        )
+                ).toList());
 
         return result;
     }

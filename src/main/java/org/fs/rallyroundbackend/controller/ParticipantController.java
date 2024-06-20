@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.fs.rallyroundbackend.dto.event.EventsInscriptionTrendByMonthAndYear;
+import org.fs.rallyroundbackend.dto.event.inscription.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.dto.event.inscription.CreatedEventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionPaymentLinkDto;
