@@ -21,6 +21,7 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActi
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
+import org.fs.rallyroundbackend.exception.auth.TermsAndConditionsException;
 import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
 import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
@@ -123,6 +124,10 @@ public class AuthServiceImp implements AuthService {
             throw new EntityExistsException("There is already an account registered with that email.");
         }
 
+        if(!request.hasAcceptedTermsAndConditions()) {
+            throw new TermsAndConditionsException();
+        }
+
         // Validate minimum age
         // Calculate the age based on the birthdate
         LocalDate currentDate = LocalDate.now();
@@ -134,6 +139,7 @@ public class AuthServiceImp implements AuthService {
 
         ParticipantEntity participantEntity = modelMapper.map(request, ParticipantEntity.class);
         participantEntity.setPassword(passwordEncoder.encode(participantEntity.getPassword()));
+        participantEntity.setHasAcceptedTermsAndConditions(request.hasAcceptedTermsAndConditions());
 
         RoleEntity role = this.roleRepository.findByName("ROLE_PARTICIPANT").orElseThrow(
                 () -> new EntityNotFoundException("Role not found.")

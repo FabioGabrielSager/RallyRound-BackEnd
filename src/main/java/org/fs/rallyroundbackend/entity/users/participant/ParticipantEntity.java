@@ -33,6 +33,9 @@ public class ParticipantEntity extends UserEntity {
     @Column(name = "reputation_as_event_creator", nullable = false)
     private ParticipantReputation reputationAsEventCreator = ParticipantReputation.GOOD;
 
+    @Column(name = "has_accepted_terms_and_conditions")
+    private boolean hasAcceptedTermsAndConditions;
+
     @ManyToOne
     @JoinColumn(name = "place_id")
     private PlaceEntity place;
