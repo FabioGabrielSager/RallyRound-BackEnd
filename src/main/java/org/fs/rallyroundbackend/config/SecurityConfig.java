@@ -85,6 +85,7 @@ public class SecurityConfig {
                                 .requestMatchers("/notification").permitAll()
 
                                 .requestMatchers("/rr/api/v1/documents/terms-and-conditions").permitAll()
+                                .requestMatchers("/rr/api/v1/faq").permitAll()
 
                                 .anyRequest().authenticated()
                 )
