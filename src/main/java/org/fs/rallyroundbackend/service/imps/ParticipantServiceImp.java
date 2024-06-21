@@ -404,7 +404,7 @@ public class ParticipantServiceImp implements ParticipantService {
 
         return SearchedParticipantResult
                 .builder()
-                .matches(List.of(this.modelMapper.map(matchesPage, ParticipantResume[].class)))
+                .matches(List.of(this.modelMapper.map(matchesPage, ParticipantSummary[].class)))
                 .totalMatches(totalMatchesCount)
                 .limit(limit == null ? 5 : limit)
                 .page(page == null ? 0 : page)
@@ -453,8 +453,8 @@ public class ParticipantServiceImp implements ParticipantService {
         top.setEventCreators(
                 creatorsTopData.stream().map(
                         result -> {
-                            ParticipantResume creator =
-                                    new ParticipantResume((UUID) result[0], (String) result[1], (byte[]) result[3]);
+                            ParticipantSummary creator =
+                                    new ParticipantSummary((UUID) result[0], (String) result[1], (byte[]) result[3]);
                             return new TopEventCreatorResponse(creator, (long) result[4]);
                         }
                 ).toList()

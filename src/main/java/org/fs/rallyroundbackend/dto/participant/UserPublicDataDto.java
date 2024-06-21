@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
-import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
-public class UserPublicDataDto extends ParticipantResume {
+public class UserPublicDataDto extends ParticipantSummary {
     protected ParticipantReputation reputationAsEventCreator;
     protected ParticipantReputation reputationAsParticipant;
     protected List<ParticipantFavoriteActivityDto> favoriteActivities;

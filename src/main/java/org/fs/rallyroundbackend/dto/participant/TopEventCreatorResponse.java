@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TopEventCreatorResponse {
-    private ParticipantResume eventCreator;
+    private ParticipantSummary eventCreator;
     private long finalizedEventsCount;
 }

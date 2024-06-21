@@ -8,7 +8,7 @@ import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.location.addresses.SpecificAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
-import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
+import org.fs.rallyroundbackend.dto.participant.ParticipantSummary;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
@@ -35,8 +35,8 @@ public class MappersConfig {
         modelMapper.addConverter(new AbstractConverter<EventParticipantEntity, EventParticipantDto>() {
             @Override
             protected EventParticipantDto convert(EventParticipantEntity source) {
-                ParticipantResume participantNameAndProfilePhoto = new
-                        ParticipantResume();
+                ParticipantSummary participantNameAndProfilePhoto = new
+                        ParticipantSummary();
                 participantNameAndProfilePhoto.setId(source.getParticipant().getId());
                 participantNameAndProfilePhoto.setName(source.getParticipant().getName());
 

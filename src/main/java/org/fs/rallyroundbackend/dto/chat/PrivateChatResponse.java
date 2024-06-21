@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
+import org.fs.rallyroundbackend.dto.participant.ParticipantSummary;
 
 import java.util.UUID;
 
@@ -15,5 +15,5 @@ import java.util.UUID;
 @Getter @Setter
 public class PrivateChatResponse {
     private UUID chatId;
-    private ParticipantResume partnerInfo;
+    private ParticipantSummary partnerInfo;
 }

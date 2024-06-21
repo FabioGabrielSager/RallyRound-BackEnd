@@ -15,7 +15,7 @@ import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionTrendByYea
 import org.fs.rallyroundbackend.dto.event.inscription.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
-import org.fs.rallyroundbackend.dto.participant.ParticipantResume;
+import org.fs.rallyroundbackend.dto.participant.ParticipantSummary;
 import org.fs.rallyroundbackend.entity.chats.ChatType;
 import org.fs.rallyroundbackend.entity.chats.EventChatEntity;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
@@ -695,7 +695,7 @@ public class EventServiceImp implements EventService {
                     String participantName = (String) result[2];
                     byte[] profilePhoto = (byte[]) result[3];
 
-                    ParticipantResume participantResume = new ParticipantResume(participantId, participantName, profilePhoto);
+                    ParticipantSummary participantResume = new ParticipantSummary(participantId, participantName, profilePhoto);
                     return new EventComment(comment, participantResume);
                 }).toList();
 

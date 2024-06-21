@@ -10,6 +10,6 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
 @NoArgsConstructor
 @Getter
 @Setter
-public class EventCreatorResume extends ParticipantResume {
+public class EventCreatorResume extends ParticipantSummary {
     private ParticipantReputation reputationAsEventCreator;
 }

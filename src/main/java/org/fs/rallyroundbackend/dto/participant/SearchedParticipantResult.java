@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @JsonPropertyOrder({"totalMatches", "limit", "page", "matches"})
 public class SearchedParticipantResult {
-    private List<ParticipantResume> matches;
+    private List<ParticipantSummary> matches;
     private int totalMatches;
     private int page;
     private int limit;
