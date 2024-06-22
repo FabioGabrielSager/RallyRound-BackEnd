@@ -1,8 +1,10 @@
 package org.fs.rallyroundbackend.service;
 
 import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
+import org.fs.rallyroundbackend.dto.participant.ParticipantReportsPage;
 import org.fs.rallyroundbackend.dto.participant.ReportRequest;
 import org.fs.rallyroundbackend.dto.participant.ReportResponse;
+import org.fs.rallyroundbackend.dto.participant.ReportedParticipantsPage;
 import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
 import org.fs.rallyroundbackend.dto.participant.TopEventCreatorsResponse;
 import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
@@ -67,4 +69,10 @@ public interface ParticipantService {
     void inviteUserToEvent(UUID eventId, UUID userId, String eventCreatorEmail);
 
     TopEventCreatorsResponse getEventCreatorsTop(short topSize, Byte month);
+
+    ReportedParticipantsPage getReportedParticipants(Integer limit, Integer page);
+
+    ParticipantReportsPage getParticipantReports(UUID participantId, Integer limit, Integer page);
+
+    void deleteParticipantReport(UUID reportId);
 }

@@ -1,5 +1,6 @@
 package org.fs.rallyroundbackend.repository.user.participant;
 
+import org.fs.rallyroundbackend.dto.participant.ParticipantReportsCount;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +41,23 @@ public interface ParticipantRepository extends JpaRepository<ParticipantEntity, 
                     "LIMIT :topSize"
     )
     List<Object[]> getTopEventCreators(short topSize, int month);
+
+    @Query(
+            "SELECT SUM(CASE WHEN r.asEventCreator IS FALSE THEN 1 ELSE 0 END), " +
+                    "SUM(CASE WHEN r.asEventCreator IS TRUE THEN 1 ELSE 0 END)," +
+                    "p.id, p.name, p.profilePhoto " +
+                    "FROM ReportEntity r " +
+                    "JOIN ParticipantEntity p ON r.reportedParticipant=p " +
+                    "GROUP BY p.id, p.name, p.profilePhoto " +
+                    "ORDER BY 1, 2 DESC " +
+                    "LIMIT :limit OFFSET :offset"
+    )
+    List<Object[]> getReportedParticipants(int limit, int offset);
+
+    @Query(
+            "SELECT COUNT(DISTINCT p.id) FROM ReportEntity r " +
+                    "JOIN ParticipantEntity p ON r.reportedParticipant=p " +
+                    "GROUP BY p.id, p.name, p.profilePhoto "
+    )
+    Long countReportedParticipants();
 }

@@ -13,14 +13,7 @@ import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.EventResponseForEventCreators;
 import org.fs.rallyroundbackend.dto.event.EventResponseForParticipants;
 import org.fs.rallyroundbackend.dto.event.EventResumePageDto;
-import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
-import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationResponse;
-import org.fs.rallyroundbackend.dto.participant.ReportRequest;
-import org.fs.rallyroundbackend.dto.participant.ReportResponse;
-import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
-import org.fs.rallyroundbackend.dto.participant.TopEventCreatorsResponse;
-import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
-import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
+import org.fs.rallyroundbackend.dto.participant.*;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
 import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
@@ -216,6 +209,26 @@ public class ParticipantController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(reportResponse);
+    }
+
+    @GetMapping("report/participants/")
+    public ResponseEntity<ReportedParticipantsPage> getReportedParticipants(@RequestParam(required = false) Integer limit,
+                                                                            @RequestParam(required = false) Integer page) {
+        return ResponseEntity.ok(this.participantService.getReportedParticipants(limit, page));
+    }
+
+    @GetMapping("reports/{participantId}")
+    public ResponseEntity<ParticipantReportsPage> getParticipantsReports(@PathVariable(value = "participantId") UUID id,
+                                                                         @RequestParam(required = false) Integer limit,
+                                                                         @RequestParam(required = false) Integer page) {
+        return ResponseEntity.ok(this.participantService.getParticipantReports(id, limit, page));
+    }
+
+    @DeleteMapping("report/delete/{reportId}")
+    public ResponseEntity<Void> deleteReport(@PathVariable UUID reportId) {
+        this.participantService.deleteParticipantReport(reportId);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "modify/",

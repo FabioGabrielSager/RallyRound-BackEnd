@@ -65,6 +65,9 @@ public class SecurityConfig {
                                 .requestMatchers("/rr/api/v1/activities/matches/{name}").permitAll()
 
                                 .requestMatchers("/rr/api/v1/participant/**").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/participant/report/participants/").hasRole("ADMIN")
+                                .requestMatchers("/rr/api/v1/participant/reports/{participantId}").hasRole("ADMIN")
+                                .requestMatchers("/rr/api/v1/participant/report/delete/{reportId}").hasRole("ADMIN")
 
                                 .requestMatchers("/rr/api/v1/mp/auth/url/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/mp/auth/account/linked/").hasRole("PARTICIPANT")

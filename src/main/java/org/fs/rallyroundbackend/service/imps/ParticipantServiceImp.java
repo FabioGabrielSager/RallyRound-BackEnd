@@ -45,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,14 +111,14 @@ public class ParticipantServiceImp implements ParticipantService {
                                 "Participant with email " + reporterEmail + " not found"));
 
 
-        if(reportedParticipant.getReports() != null) {
+        if (reportedParticipant.getReports() != null) {
             List<ReportEntity> reports = reportedParticipant
                     .getReports()
                     .stream()
                     .filter(r -> r.getReporterId().equals(reporter.getId()))
                     .toList();
 
-            if(reports.size() > 2
+            if (reports.size() > 2
                     || !reports.isEmpty()
                     && reports.stream().anyMatch(r -> r.isAsEventCreator() == reportRequest.isAsEventCreator())) {
                 throw new ReportsLimitException("You have already reported this user.");
@@ -128,6 +129,8 @@ public class ParticipantServiceImp implements ParticipantService {
 
 
         ReportEntity reportEntity = ReportEntity.builder()
+                .date(LocalDateTime.now())
+                .number(reportedParticipant.getReports().isEmpty() ? 1 : reportedParticipant.getReports().size())
                 .motive(reportRequest.getReportMotive())
                 .description(reportRequest.getDescription())
                 .reportedParticipant(reportedParticipant)
@@ -139,14 +142,14 @@ public class ParticipantServiceImp implements ParticipantService {
 
         int reportedParticipantReportsCount = reportedParticipant.getReports().size();
 
-        if(reportedParticipantReportsCount > 10 && reportedParticipantReportsCount < 20) {
-            if(reportRequest.isAsEventCreator()) {
+        if (reportedParticipantReportsCount > 10 && reportedParticipantReportsCount < 20) {
+            if (reportRequest.isAsEventCreator()) {
                 reportedParticipant.setReputationAsEventCreator(ParticipantReputation.INTERMEDIATE);
             } else {
                 reportedParticipant.setReputationAsParticipant(ParticipantReputation.INTERMEDIATE);
             }
-        } else if(reportedParticipantReportsCount > 20) {
-            if(reportRequest.isAsEventCreator()) {
+        } else if (reportedParticipantReportsCount > 20) {
+            if (reportRequest.isAsEventCreator()) {
                 reportedParticipant.setReputationAsEventCreator(ParticipantReputation.BAD);
             } else {
                 reportedParticipant.setReputationAsParticipant(ParticipantReputation.BAD);
@@ -187,13 +190,13 @@ public class ParticipantServiceImp implements ParticipantService {
     @Override
     @Transactional
     public UserPersonalDataDto modifyParticipantAccount(String userEmail, ParticipantAccountModificationRequest request,
-                                         MultipartFile profilePhoto) {
+                                                        MultipartFile profilePhoto) {
         ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 "Participant with email " + userEmail + " not found"));
 
-        if(request.getPlace() != null) {
+        if (request.getPlace() != null) {
             // Validating the place
             String bingMapQuery = request.getPlace().getAddress().getAddressLine() == null
                     ? request.getPlace().getAddress().getFormattedAddress()
@@ -205,7 +208,7 @@ public class ParticipantServiceImp implements ParticipantService {
             Optional<PlaceDto> filteredPlace = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
                     .filter(p -> p.equals(request.getPlace())).findFirst();
 
-            if(filteredPlace.isEmpty()) {
+            if (filteredPlace.isEmpty()) {
                 throw new InvalidPlaceException();
             }
 
@@ -221,23 +224,23 @@ public class ParticipantServiceImp implements ParticipantService {
             }
         }
 
-        if(request.getName() != null && !request.getName().isEmpty())
+        if (request.getName() != null && !request.getName().isEmpty())
             participant.setName(request.getName());
-        if(request.getLastName() != null && !request.getLastName().isEmpty())
+        if (request.getLastName() != null && !request.getLastName().isEmpty())
             participant.setLastName(request.getLastName());
-        if(request.getBirthdate() != null) {
+        if (request.getBirthdate() != null) {
             // Validate minimum age
             // Calculate the age based on the birthdate
             LocalDate currentDate = LocalDate.now();
             Period period = Period.between(request.getBirthdate(), currentDate);
             int age = period.getYears();
-            if(age < 18) {
+            if (age < 18) {
                 throw new AgeValidationException("Person must be at least 18 years old.");
             }
             participant.setBirthdate(request.getBirthdate());
         }
 
-        if(request.getFavoritesActivities() != null && request.getFavoritesActivities().length > 1) {
+        if (request.getFavoritesActivities() != null && request.getFavoritesActivities().length > 1) {
             // Map the new participant favorite activities.
             TreeSet<ParticipantFavoriteActivityEntity> participantFavoriteActivitiesEntities = new TreeSet<>();
 
@@ -290,7 +293,7 @@ public class ParticipantServiceImp implements ParticipantService {
                         new EntityNotFoundException(
                                 "Participant with email " + userEmail + " not found"));
 
-        if(!this.passwordEncoder.matches(password, participant.getPassword())) {
+        if (!this.passwordEncoder.matches(password, participant.getPassword())) {
             throw new IncorrectPasswordException();
         }
 
@@ -313,9 +316,9 @@ public class ParticipantServiceImp implements ParticipantService {
             participant.getFavoriteActivities().clear(); // Clear references
         }
 
-        if(participant.getEventInscriptions() != null) {
-            for(EventInscriptionEntity inscriptionEntity : participant.getEventInscriptions()) {
-                if(inscriptionEntity.getStatus() != EventInscriptionStatus.ACCEPTED) {
+        if (participant.getEventInscriptions() != null) {
+            for (EventInscriptionEntity inscriptionEntity : participant.getEventInscriptions()) {
+                if (inscriptionEntity.getStatus() != EventInscriptionStatus.ACCEPTED) {
                     this.eventInscriptionRepository.delete(inscriptionEntity);
                 }
             }
@@ -343,7 +346,7 @@ public class ParticipantServiceImp implements ParticipantService {
         EventEntity event = this.eventRepository.findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found"));
 
-        if(event.getState() != EventState.READY_TO_START && event.getState() != EventState.WAITING_FOR_PARTICIPANTS) {
+        if (event.getState() != EventState.READY_TO_START && event.getState() != EventState.WAITING_FOR_PARTICIPANTS) {
             throw new EventStateException("Business rule violation. You can't remove a participant from an event " +
                     "that is not in the state WAITING_FOR_PARTICIPANTS or READY_TO_START.");
         }
@@ -366,7 +369,7 @@ public class ParticipantServiceImp implements ParticipantService {
 
         this.participantNotificationService.removeEventsNotifications(eventId, participant.getId());
 
-        if(event.getState() == EventState.READY_TO_START) {
+        if (event.getState() == EventState.READY_TO_START) {
             event.setState(EventState.WAITING_FOR_PARTICIPANTS);
             this.eventRepository.save(event);
         }
@@ -381,7 +384,7 @@ public class ParticipantServiceImp implements ParticipantService {
                 .build();
 
         event.getEventParticipants().forEach(ep -> {
-            if(!ep.getParticipant().getId().equals(participant.getId())) {
+            if (!ep.getParticipant().getId().equals(participant.getId())) {
                 participantNotification.setParticipantEventCreated(ep.isEventCreator());
 
                 this.participantNotificationService.sendNotification(participantNotification,
@@ -393,7 +396,7 @@ public class ParticipantServiceImp implements ParticipantService {
     @Override
     public SearchedParticipantResult searchParticipant(String requesterEmail, String query, Integer page, Integer limit) {
 
-        Pageable pageable = PageRequest.of(page == null ? 0 : page-1, limit == null ? 5 : limit);
+        Pageable pageable = PageRequest.of(page == null ? 0 : page - 1, limit == null ? 5 : limit);
 
         List<ParticipantEntity> matchesPage = this.participantRepository
                 .findByNameOrLastName(query, query, requesterEmail,
@@ -421,8 +424,8 @@ public class ParticipantServiceImp implements ParticipantService {
 
         this.eventRepository.findEventByIdAndEventCreator(participant.getId(), eventId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                                        String.format("The event creator with email %s doesn't have an event with id %s"
-                                                , eventCreatorEmail, eventId)));
+                        String.format("The event creator with email %s doesn't have an event with id %s"
+                                , eventCreatorEmail, eventId)));
 
 
         ParticipantNotificationDto invitation = ParticipantNotificationDto.builder()
@@ -442,7 +445,7 @@ public class ParticipantServiceImp implements ParticipantService {
     public TopEventCreatorsResponse getEventCreatorsTop(short topSize, Byte month) {
         byte validMonth = (byte) LocalDate.now().getMonth().getValue();
 
-        if(month != null && month < 13 && month > 0) {
+        if (month != null && month < 13 && month > 0) {
             validMonth = month;
         }
 
@@ -461,5 +464,102 @@ public class ParticipantServiceImp implements ParticipantService {
         );
 
         return top;
+    }
+
+    @Override
+    public ReportedParticipantsPage getReportedParticipants(Integer limit, Integer page) {
+        int validLimit = 10;
+        int validPage = 1;
+
+        if (limit != null) {
+            validLimit = limit;
+        }
+
+        if (page != null) {
+            validPage = page;
+        }
+
+        Long reportedParticipantsCount = this.participantRepository.countReportedParticipants();
+
+        ReportedParticipantsPage reportedParticipantsPage = new ReportedParticipantsPage();
+        reportedParticipantsPage.setPage(validPage);
+        reportedParticipantsPage.setPageSize(validLimit);
+        reportedParticipantsPage.setTotalElements(reportedParticipantsCount != null ? reportedParticipantsCount : 0);
+        reportedParticipantsPage.setReportedParticipants(new ArrayList<>());
+
+        // TODO: Maybe encapsulate this mapping logic in the repository it's a better idea
+        List<Object[]> reportedParticipantsQueryResult =
+                this.participantRepository.getReportedParticipants(validLimit, validLimit * (validPage - 1));
+
+        for (Object[] reportedParticipantFromQueryResult : reportedParticipantsQueryResult) {
+            ParticipantReportsCount reportedParticipant = ParticipantReportsCount.builder()
+                    .asParticipantReportsCount(reportedParticipantFromQueryResult[0] != null
+                            ? (long) reportedParticipantFromQueryResult[0] : 0)
+                    .asEventCreatorReportsCount(reportedParticipantFromQueryResult[1] != null
+                            ? (long) reportedParticipantFromQueryResult[1] : 0)
+                    .participant(
+                            new ParticipantSummary(
+                                    (UUID) reportedParticipantFromQueryResult[2],
+                                    (String) reportedParticipantFromQueryResult[3],
+                                    (byte[]) reportedParticipantFromQueryResult[4]
+                            )
+                    )
+                    .build();
+
+            reportedParticipantsPage.getReportedParticipants().add(reportedParticipant);
+        }
+
+        return reportedParticipantsPage;
+    }
+
+    @Override
+    public ParticipantReportsPage getParticipantReports(UUID participantId, Integer limit, Integer page) {
+        int validLimit = 10;
+        int validPage = 1;
+
+        if (limit != null) {
+            validLimit = limit;
+        }
+
+        if (page != null) {
+            validPage = page;
+        }
+
+        ParticipantReportsPage reportsPage = new ParticipantReportsPage();
+        reportsPage.setPage(validPage);
+        reportsPage.setPageSize(validLimit);
+
+        Long reportsCount = this.reportRepository.countAllByParticipantId(participantId);
+
+        reportsPage.setTotalElements(reportsCount != null ? reportsCount : 0);
+
+        List<ReportEntity> participantReportsEntities = this.reportRepository
+                .findAllByParticipantId(participantId, validLimit, validLimit * (validPage - 1));
+
+        reportsPage.setReports(participantReportsEntities.stream().map(
+                        re -> {
+                            ReportResponse reportResponse = new ReportResponse();
+                            reportResponse.setReportedUserId(re.getReportedParticipant().getId());
+                            reportResponse.setReportMotive(re.getMotive());
+                            reportResponse.setDescription(re.getDescription());
+                            reportResponse.setAsEventCreator(re.isAsEventCreator());
+                            reportResponse.setReportNumber(re.getNumber());
+                            reportResponse.setReportDateTime(re.getDate());
+                            reportResponse.setId(re.getId());
+                            return reportResponse;
+                        }
+                ).toList()
+        );
+
+        return reportsPage;
+    }
+
+    @Override
+    public void deleteParticipantReport(UUID reportId) {
+        if(!this.reportRepository.existsById(reportId)) {
+            throw new EntityNotFoundException("Report not found.");
+        }
+
+        this.reportRepository.deleteById(reportId);
     }
 }

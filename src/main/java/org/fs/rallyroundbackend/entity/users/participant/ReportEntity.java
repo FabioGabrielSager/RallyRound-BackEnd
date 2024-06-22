@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -21,6 +22,10 @@ public class ReportEntity {
     private UUID id;
 
     private String description;
+
+    private LocalDateTime date;
+
+    private int number;
 
     @Enumerated(EnumType.STRING)
     private ReportMotive motive;
