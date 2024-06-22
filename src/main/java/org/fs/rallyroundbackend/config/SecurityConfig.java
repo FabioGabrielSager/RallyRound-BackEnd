@@ -48,6 +48,7 @@ public class SecurityConfig {
                         authRequest
                                 .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                                 .requestMatchers("/rr/api/v1/auth/participant/validate/jwt").hasRole("PARTICIPANT")
+                                .requestMatchers("/rr/api/v1/auth/password/change/").hasRole("PARTICIPANT")
                                 .requestMatchers("/rr/api/v1/auth/participant/**").permitAll()
                                 .requestMatchers("/rr/api/v1/auth/login").permitAll()
 

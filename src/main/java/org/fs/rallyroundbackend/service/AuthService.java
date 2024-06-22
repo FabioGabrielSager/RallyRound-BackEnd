@@ -7,6 +7,7 @@ import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
+import org.fs.rallyroundbackend.dto.participant.ChangePasswordRequest;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
 import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
@@ -65,4 +66,6 @@ public interface AuthService {
      * @throws EntityNotFoundException if a user with the indicated id is not found.
      */
     void refreshEmailVerificationToken(String userEmail, Locale locale);
+
+    AuthResponse changeParticipantPassword(String participantEmail, ChangePasswordRequest changePasswordRequest);
 }

@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -10,19 +11,16 @@ import org.fs.rallyroundbackend.dto.auth.ConfirmParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.LoginRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
+import org.fs.rallyroundbackend.dto.participant.ChangePasswordRequest;
+import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
 import org.fs.rallyroundbackend.service.AuthService;
+import org.fs.rallyroundbackend.service.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Locale;
@@ -32,6 +30,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
     @PostMapping(value = "/login")
@@ -68,6 +67,21 @@ public class AuthController {
                                                               Locale locale) {
         this.authService.refreshEmailVerificationToken(email, locale);
         return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("password/change/")
+    public ResponseEntity<AuthResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+                                                       HttpServletRequest request) {
+        String userEmail = jwtService.getUsernameFromToken(jwtService.getTokenFromRequest(request));
+
+        AuthResponse authResponse;
+        try {
+            authResponse = this.authService.changeParticipantPassword(userEmail, changePasswordRequest);
+        } catch (IncorrectPasswordException e) {
+            throw new AccessDeniedException("Invalid credentials.");
+        }
+
+        return ResponseEntity.ok(authResponse);
     }
 
     @GetMapping("participant/validate/jwt")

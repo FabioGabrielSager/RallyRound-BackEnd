@@ -11,6 +11,7 @@ import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationRequest;
 import org.fs.rallyroundbackend.dto.auth.ParticipantRegistrationResponse;
 import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
+import org.fs.rallyroundbackend.dto.participant.ChangePasswordRequest;
 import org.fs.rallyroundbackend.entity.events.ActivityEntity;
 import org.fs.rallyroundbackend.entity.users.PrivilegeEntity;
 import org.fs.rallyroundbackend.entity.users.RoleEntity;
@@ -21,6 +22,7 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActi
 import org.fs.rallyroundbackend.event.EmailVerificationRequiredEvent;
 import org.fs.rallyroundbackend.exception.auth.AgeValidationException;
 import org.fs.rallyroundbackend.exception.auth.FavoriteActivitiesNotSpecifiedException;
+import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
 import org.fs.rallyroundbackend.exception.auth.TermsAndConditionsException;
 import org.fs.rallyroundbackend.exception.auth.UnsuccessfullyEmailVerificationException;
 import org.fs.rallyroundbackend.exception.location.InvalidPlaceException;
@@ -96,13 +98,6 @@ public class AuthServiceImp implements AuthService {
 
         String token = jwtService.getToken(user);
 
-        Set<String> userPrivileges = new HashSet<>();
-
-        for(PrivilegeEntity p : user.getPrivileges()) {
-            userPrivileges.add(p.getCategory().getName());
-            userPrivileges.add(p.getName());
-        }
-
         user.setLastLoginTime(LocalDateTime.now());
 
         this.userRepository.save(user);
@@ -113,7 +108,7 @@ public class AuthServiceImp implements AuthService {
                 .notificationTrayId(user.getId())
                 .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
                         .collect(Collectors.toSet()))
-                .privileges(userPrivileges.stream().toList())
+                .privileges(this.getUserPrivileges(user).stream().toList())
                 .build();
     }
 
@@ -269,5 +264,42 @@ public class AuthServiceImp implements AuthService {
 
         applicationEventPublisher.publishEvent(new EmailVerificationRequiredEvent(user.getId(),
                 locale));
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse changeParticipantPassword(String userEmail, ChangePasswordRequest changePasswordRequest) {
+        UserEntity user = this.userRepository.findEnabledUserByEmail(userEmail)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                "User with email " + userEmail + " not found"));
+
+        if (!this.passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+
+        user.setPassword(this.passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+
+        this.userRepository.save(user);
+
+        return AuthResponse.builder()
+                .token(this.jwtService.getToken(user))
+                .username(user.getName())
+                .notificationTrayId(user.getId())
+                .userRoles(user.getRoles().stream().map(r -> r.getName().substring(SPRING_SECURITY_ROLE_PREFIX.length()))
+                        .collect(Collectors.toSet()))
+                .privileges(this.getUserPrivileges(user).stream().toList())
+                .build();
+    }
+
+    private Set<String> getUserPrivileges(UserEntity user) {
+        Set<String> userPrivileges = new HashSet<>();
+
+        for(PrivilegeEntity p : user.getPrivileges()) {
+            userPrivileges.add(p.getCategory().getName());
+            userPrivileges.add(p.getName());
+        }
+
+        return userPrivileges;
     }
 }
