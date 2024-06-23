@@ -176,8 +176,11 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
 
             eventEntity.getEventParticipants()
                     .forEach(ep -> {
-                        Time selectedHour = ep.getScheduleVote().getSelectedHour();
-                        timeVotes.put(selectedHour, timeVotes.get(selectedHour) + 1);
+                        if(eventEntity.isEventCreatorParticipant() || !ep.isEventCreator()) {
+                            Time selectedHour = ep.getScheduleVote().getSelectedHour();
+                            timeVotes.put(selectedHour, timeVotes.get(selectedHour) + 1);
+                        }
+
                     });
 
             Time mostSelectedStartTime = getMostVotedTime(eventEntity, timeVotes);

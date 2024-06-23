@@ -178,7 +178,7 @@ public class LocationServiceImp implements LocationService {
         if (streetEntityOptional.isPresent()) {
             streetEntity = streetEntityOptional.get();
         } else {
-            streetEntity.setName(address.getNeighborhood());
+            streetEntity.setName(address.getStreetName());
             neighborhoodEntity.getStreets().add(streetEntity);
             streetEntity.setNeighborhood(neighborhoodEntity);
 
