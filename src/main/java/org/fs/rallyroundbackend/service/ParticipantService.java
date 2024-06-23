@@ -1,14 +1,6 @@
 package org.fs.rallyroundbackend.service;
 
-import org.fs.rallyroundbackend.dto.participant.ParticipantAccountModificationRequest;
-import org.fs.rallyroundbackend.dto.participant.ParticipantReportsPage;
-import org.fs.rallyroundbackend.dto.participant.ReportRequest;
-import org.fs.rallyroundbackend.dto.participant.ReportResponse;
-import org.fs.rallyroundbackend.dto.participant.ReportedParticipantsPage;
-import org.fs.rallyroundbackend.dto.participant.SearchedParticipantResult;
-import org.fs.rallyroundbackend.dto.participant.TopEventCreatorsResponse;
-import org.fs.rallyroundbackend.dto.participant.UserPersonalDataDto;
-import org.fs.rallyroundbackend.dto.participant.UserPublicDataDto;
+import org.fs.rallyroundbackend.dto.participant.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -75,4 +67,6 @@ public interface ParticipantService {
     ParticipantReportsPage getParticipantReports(UUID participantId, Integer limit, Integer page);
 
     void deleteParticipantReport(UUID reportId);
+
+    ReportsByMotiveAndMonthAndYear getReportsCountByMotiveAndMonthAndYear(Integer year, Integer month);
 }

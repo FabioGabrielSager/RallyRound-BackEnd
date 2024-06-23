@@ -290,4 +290,12 @@ public class ParticipantController {
     public ResponseEntity<TopEventCreatorsResponse> getTopFiveEventCreators(@RequestParam(required = false) Byte month) {
         return ResponseEntity.ok(this.participantService.getEventCreatorsTop((short) 5, month));
     }
+
+    @GetMapping("reports/count")
+    public ResponseEntity<ReportsByMotiveAndMonthAndYear> getReportsCount(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month
+    ) {
+        return ResponseEntity.ok(this.participantService.getReportsCountByMotiveAndMonthAndYear(year, month));
+    }
 }

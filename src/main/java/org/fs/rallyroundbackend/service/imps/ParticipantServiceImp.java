@@ -562,4 +562,20 @@ public class ParticipantServiceImp implements ParticipantService {
 
         this.reportRepository.deleteById(reportId);
     }
+
+    @Override
+    public ReportsByMotiveAndMonthAndYear getReportsCountByMotiveAndMonthAndYear(Integer year, Integer month) {
+        int validYear = year == null ? LocalDate.now().getYear() : year;
+        int validMonth = LocalDate.now().getMonth().getValue();
+
+        if (month != null && month < 13 && month > 0) {
+            validMonth = month;
+        }
+
+        ReportsByMotiveAndMonthAndYear reports =
+                this.reportRepository.getReportsByMotiveAndMonthAndYear(validYear, validMonth);
+        reports.setMonth(validMonth);
+        reports.setYear(validYear);
+        return reports;
+    }
 }
