@@ -223,8 +223,10 @@ public class EventServiceImp implements EventService {
                 .findByParticipantIdAndEventId(participant.getId(), eventEntity.getId())
                 .get();
 
-        if (eventEntity.getState() != EventState.WAITING_FOR_PARTICIPANTS) {
-            throw new EventStateException("Only events that are waiting for participants can be modified.");
+        Long eventParticipantCount = this.eventRepository.countEventParticipants(eventEntity);
+
+        if (eventParticipantCount > 1) {
+            throw new EventStateException("Only events that do not yet have participants can be modified.");
         }
 
         if (request.getActivity() != null) {

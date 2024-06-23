@@ -224,4 +224,11 @@ public interface EventRepository extends JpaRepository<EventEntity, UUID> {
                     "GROUP BY MONTH(e.date)"
     )
     List<Object[]> getEventInscriptionTrendByYear(int year);
+
+    @Query(
+            "SELECT COUNT(DISTINCT ep) FROM EventEntity e " +
+                    "JOIN EventParticipantEntity ep ON ep.event=e " +
+                    "WHERE e=:event"
+    )
+    Long countEventParticipants(EventEntity event);
 }
