@@ -28,4 +28,6 @@ public class ActivityEntity {
 
     @Column(nullable = false)
     private String name;
+
+    private boolean enabled = true;
 }

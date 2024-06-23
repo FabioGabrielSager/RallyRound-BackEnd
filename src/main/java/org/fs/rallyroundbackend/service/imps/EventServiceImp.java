@@ -32,6 +32,7 @@ import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
+import org.fs.rallyroundbackend.exception.event.DisabledActivityException;
 import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
 import org.fs.rallyroundbackend.exception.event.InvalidEventStartingTimesException;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
@@ -140,6 +141,9 @@ public class EventServiceImp implements EventService {
 
         if (activityEntityOptional.isPresent()) {
             activityEntity = activityEntityOptional.get();
+            if(!activityEntity.isEnabled()) {
+                throw new DisabledActivityException();
+            }
         } else {
             activityEntity.setName(request.getActivity());
         }
@@ -229,6 +233,9 @@ public class EventServiceImp implements EventService {
 
             if (activityEntityOptional.isPresent()) {
                 activityEntity = activityEntityOptional.get();
+                if(!activityEntity.isEnabled()) {
+                    throw new DisabledActivityException();
+                }
             } else {
                 activityEntity.setName(request.getActivity());
             }

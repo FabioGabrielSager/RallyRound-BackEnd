@@ -1,8 +1,11 @@
 package org.fs.rallyroundbackend.service;
 
+import org.fs.rallyroundbackend.dto.activity.ActivityPage;
 import org.fs.rallyroundbackend.dto.activity.MatchedActivities;
 import org.fs.rallyroundbackend.dto.event.EventsForActivityByMonth;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 /**
  * Service interface for managing activities.
@@ -27,4 +30,9 @@ public interface ActivityService {
     MatchedActivities getMatchingActivitiesNames(String name);
 
     EventsForActivityByMonth getEventsForActivity(Integer month, String inscriptionFeeType);
+
+    ActivityPage getAllActivities(String name, Boolean enabled, Integer page, Integer limit);
+
+    void disableActivity(UUID activityId);
+    void enableActivity(UUID activityId);
 }
