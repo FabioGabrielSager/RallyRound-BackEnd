@@ -10,7 +10,7 @@ import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccessTokenRequestException;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccountAlreadyLinkedException;
 import org.fs.rallyroundbackend.repository.MPAuthTokenRepository;
-import org.fs.rallyroundbackend.repository.user.ParticipantRepository;
+import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.imps.MPAuthServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +48,6 @@ public class MPAuthServiceTest {
     private ParticipantRepository participantRepository;
     @Mock
     private MPClient mpClient;
-    @Mock
-    private SimpMessagingTemplate simpMessagingTemplate;
     @InjectMocks
     private MPAuthServiceImp mpAuthService;
 
@@ -145,7 +143,7 @@ public class MPAuthServiceTest {
                 .accessToken("accessToken")
                 .tokenType("bearer")
                 .expireIn(15552000)
-                .userId(241983636)
+                .userId(241983636L)
                 .scope(UUID.randomUUID().toString())
                 .refreshToken("refreshToken")
                 .publicKey("APP_USR-d0a26210-XXXXXXXX-479f0400869e")
@@ -156,8 +154,7 @@ public class MPAuthServiceTest {
 
         this.mpAuthService.getAccessToken("1", this.mpAuthTokenEntity.getId());
 
-        verify(simpMessagingTemplate).convertAndSend(eq("/mp-auth/queue/access_success/"
-                + mpAuthTokenEntity.getId()), eq(true));
+        verify(this.mpAuthTokenRepository).save(any(MPAuthTokenEntity.class));
     }
 
     @Test

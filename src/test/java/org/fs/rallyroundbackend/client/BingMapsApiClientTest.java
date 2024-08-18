@@ -6,11 +6,17 @@ import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
 import org.fs.rallyroundbackend.client.BingMaps.request.PlaceRequestForLocationAPI;
 import org.fs.rallyroundbackend.client.BingMaps.response.location.BingMapApiLocationResponse;
 import org.fs.rallyroundbackend.client.BingMaps.response.location.Location;
-import org.fs.rallyroundbackend.dto.location.Address;
-import org.fs.rallyroundbackend.dto.location.PlaceDto;
+import org.fs.rallyroundbackend.config.MappersConfig;
+import org.fs.rallyroundbackend.dto.location.places.PlaceAddressDto;
+import org.fs.rallyroundbackend.dto.location.places.PlaceDto;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,17 +29,21 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+@Import(MappersConfig.class)
+@SpringBootTest
 public class BingMapsApiClientTest {
     private static MockWebServer mockWebServer;
     private static BingMapApiClient underTest;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    @BeforeAll
-    public static void setUp() {
+    @BeforeEach
+    public void setUp() {
         mockWebServer = new MockWebServer();
         WebClient mockedWebClient = WebClient.builder()
                 .baseUrl(mockWebServer.url("/test").toString())
                 .build();
-        underTest = new BingMapApiClient(mockedWebClient);
+        underTest = new BingMapApiClient(mockedWebClient, this.modelMapper);
         underTest.setBaseUrl(mockWebServer.url("/test").toString());
     }
 
@@ -91,7 +101,7 @@ public class BingMapsApiClientTest {
                     assertNotNull(location.getAddress());
                     assertNotNull(location.getPoint());
 
-                    // Address
+                    // PlaceAddressDto
                     assertEquals("Estación General Paz", location.getAddress().getLocality());
                     assertEquals("CBA", location.getAddress().getAdminDistrict());
                     assertEquals("Departamento Colón", location.getAddress().getAdminDistrict2());
@@ -157,7 +167,7 @@ public class BingMapsApiClientTest {
                     assertNotNull(location.getAddress());
                     assertNotNull(location.getPoint());
 
-                    // Address
+                    // PlaceAddressDto
                     assertEquals("Villa Allende", location.getAddress().getLocality());
                     assertEquals("CBA", location.getAddress().getAdminDistrict());
                     assertEquals("Departamento Colón", location.getAddress().getAdminDistrict2());
@@ -176,7 +186,7 @@ public class BingMapsApiClientTest {
     public void getAutosuggestionByPlace() {
         PlaceDto request = PlaceDto.builder()
                 .address(
-                        Address.builder()
+                        PlaceAddressDto.builder()
                                 .adminDistrict("Córdoba")
                                 .adminDistrict2("Departamento Capital")
                                 .countryRegion("Argentina")
@@ -197,7 +207,7 @@ public class BingMapsApiClientTest {
                         ":\"Cordoba\",\"adminDistrict\":\"Córdoba\",\"adminDistrict2\":\"Departamento Capital\"," +
                         "\"countryRegionIso2\":\"AR\",\"formattedAddress\":\"Cordoba Córdoba\"}},{\"__type\":\"Pl" +
                         "ace\",\"address\":{\"countryRegion\":\"Argentina\",\"adminDistrict\":\"Córdoba\",\"" +
-                        "countryRegionIso2\":\"AR\",\"formattedAddress\":\"Córdoba\"}},{\"__type\":\"Address\"," +
+                        "countryRegionIso2\":\"AR\",\"formattedAddress\":\"Córdoba\"}},{\"__type\":\"PlaceAddressDto\"," +
                         "\"address\":{\"countryRegion\":\"Argentina\",\"locality\":\"Mendiolaza\",\"adminDistrict" +
                         "\":\"Córdoba\",\"adminDistrict2\":\"Departamento Colón\",\"countryRegionIso2\":\"AR\"," +
                         "\"houseNumber\":\"\",\"addressLine\":\"Córdoba\",\"streetName\":\"Córdoba\",\"formattedAddress" +
@@ -223,7 +233,7 @@ public class BingMapsApiClientTest {
                         .setBody(mockedResponse)
         );
 
-        Mono<PlaceDto[]> result = underTest.getAutosuggestionByPlace(request);
+        Mono<PlaceDto[]> result = underTest.getAutosuggestionByPlace(request.getAddress().getFormattedAddress());
 
 
         // Then
@@ -238,7 +248,7 @@ public class BingMapsApiClientTest {
     public void getAutosuggestionByPlace_emptyResponse() {
         PlaceDto request = PlaceDto.builder()
                 .address(
-                        Address.builder()
+                        PlaceAddressDto.builder()
                                 .adminDistrict("Córdoba")
                                 .adminDistrict2("Departamento Capital")
                                 .countryRegion("Argentina")
@@ -265,7 +275,7 @@ public class BingMapsApiClientTest {
                         .setBody(mockedResponse)
         );
 
-        Mono<PlaceDto[]> result = underTest.getAutosuggestionByPlace(request);
+        Mono<PlaceDto[]> result = underTest.getAutosuggestionByPlace(request.getAddress().getFormattedAddress());
 
 
         // Then

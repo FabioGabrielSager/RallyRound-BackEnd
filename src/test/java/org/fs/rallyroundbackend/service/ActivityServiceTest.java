@@ -43,7 +43,7 @@ public class ActivityServiceTest {
     public void saveNewActivity_withNotRegisteredName() {
         when(this.activityRepository.existsByName("futbol")).thenReturn(false);
         when(this.activityRepository.save(any(ActivityEntity.class)))
-                .thenReturn(new ActivityEntity(UUID.randomUUID(), "futbol"));
+                .thenReturn(new ActivityEntity(UUID.randomUUID(), "futbol", true));
 
         assertEquals(this.activityService.saveNewActivity("futbol"), "futbol");
     }
