@@ -135,6 +135,10 @@ public class EventServiceImp implements EventService {
 
         eventEntity.setAddress(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
 
+        if(request.getAddress().getAddress().getHouseNumber() != null) {
+            eventEntity.getAddress().setHouseNumber(request.getAddress().getAddress().getHouseNumber());
+        }
+
         // Adding event activity
         ActivityEntity activityEntity = new ActivityEntity();
         Optional<ActivityEntity> activityEntityOptional = this.activityRepository.findByName(request.getActivity());
@@ -280,6 +284,9 @@ public class EventServiceImp implements EventService {
             }
 
             eventEntity.setAddress(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
+            if(request.getAddress().getAddress().getHouseNumber() != null) {
+                eventEntity.getAddress().setHouseNumber(request.getAddress().getAddress().getHouseNumber());
+            }
         }
 
         if (request.getParticipantsLimit() != null) {
