@@ -18,11 +18,11 @@ insert into privileges (name, category_id) values ('READ_STATISTICS', 1);
 insert into privileges (name, category_id) values ('SEARCH_EVENTS', 2);
 insert into privileges (name, category_id) values ('CANCEL_EVENTS', 2);
 
-insert into activities (id, name) values ( 'f0862697-ce12-4f92-9a4b-97ae672b8ad0', 'futbol' );
-insert into activities (id, name) values ( '508ce32f-39ad-4a99-bfc2-19408ceb7376', 'tennis' );
-insert into activities (id, name) values ( '832bc5b7-d927-4945-93f7-7bf3957d3073', 'futbol americano' );
-insert into activities (id, name) values ( 'df6d1908-9bf9-4d15-aad8-7414883d04c4', 'futbol sala' );
-insert into activities (id, name) values ( 'd79e17f0-3ad5-4896-935c-c8dd4324f00e', 'básquet' );
+insert into activities (id, enabled, name) values ( 'f0862697-ce12-4f92-9a4b-97ae672b8ad0', true, 'futbol' );
+insert into activities (id, enabled, name) values ( '508ce32f-39ad-4a99-bfc2-19408ceb7376', true, 'tennis' );
+insert into activities (id, enabled, name) values ( '832bc5b7-d927-4945-93f7-7bf3957d3073', true, 'futbol americano' );
+insert into activities (id, enabled, name) values ( 'df6d1908-9bf9-4d15-aad8-7414883d04c4', true, 'futbol sala' );
+insert into activities (id, enabled, name) values ( 'd79e17f0-3ad5-4896-935c-c8dd4324f00e', true, 'básquet' );
 
 -- Mocked participant user. Password=mockpass
 insert into users (id, name, last_name, email, birthdate, password, account_non_expired,
