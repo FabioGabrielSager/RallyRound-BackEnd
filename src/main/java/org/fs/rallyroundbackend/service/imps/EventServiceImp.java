@@ -1,5 +1,7 @@
 package org.fs.rallyroundbackend.service.imps;
 
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.fs.rallyroundbackend.client.BingMaps.BingMapApiClient;
@@ -28,7 +30,7 @@ import org.fs.rallyroundbackend.entity.events.ScheduleEntity;
 import org.fs.rallyroundbackend.entity.events.ScheduleVoteEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
-import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantReputation;
@@ -40,6 +42,7 @@ import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.ParticipantNotInscribedException;
 import org.fs.rallyroundbackend.exception.location.InvalidAddressException;
+import org.fs.rallyroundbackend.exception.mercadopago.MPAccessTokenRequestException;
 import org.fs.rallyroundbackend.repository.ActivityRepository;
 import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventParticipantRepository;
@@ -50,6 +53,7 @@ import org.fs.rallyroundbackend.repository.event.ScheduleRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventService;
 import org.fs.rallyroundbackend.service.LocationService;
+import org.fs.rallyroundbackend.service.MPPaymentService;
 import org.fs.rallyroundbackend.service.ParticipantNotificationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.AccessDeniedException;
@@ -88,6 +92,7 @@ public class EventServiceImp implements EventService {
     private final EventScheduleVoteRepository eventScheduleVoteRepository;
     private final EventScheduleRepository eventScheduleRepository;
     private final ParticipantNotificationService participantNotificationService;
+    private final MPPaymentService mpPaymentService;
 
     @Override
     @Transactional
@@ -120,18 +125,19 @@ public class EventServiceImp implements EventService {
             add(eventParticipantEntity);
         }});
 
+// TODO: re-write this validation
         // Validating the address of the event
-        AddressDto[] bingMapApiAutosuggestionResponse =
-                this.bingMapApiClient.getAutosuggestionByAddress(
-                                request.getAddress().getAddress().getAddressLine())
-                        .block();
-
-        Optional<AddressDto> filteredAddress = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
-                .filter(p -> p.equals(request.getAddress())).findFirst();
-
-        if (filteredAddress.isEmpty()) {
-            throw new InvalidAddressException();
-        }
+//        AddressDto[] bingMapApiAutosuggestionResponse =
+//                this.bingMapApiClient.getAutosuggestionByAddress(
+//                                request.getAddress().getAddress().getAddressLine())
+//                        .block();
+//
+//        Optional<AddressDto> filteredAddress = Arrays.stream(Objects.requireNonNull(bingMapApiAutosuggestionResponse))
+//                .filter(p -> p.equals(request.getAddress())).findFirst();
+//
+//        if (filteredAddress.isEmpty()) {
+//            throw new InvalidAddressException();
+//        }
 
         eventEntity.setAddress(this.locationService.getAddressEntityFromAddressDto(request.getAddress()));
 
@@ -727,11 +733,11 @@ public class EventServiceImp implements EventService {
     @Override
     @Transactional
     public void cancelEvent(UUID eventId, String creatorEmail) {
-        ParticipantEntity participant = this.participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
+        ParticipantEntity eventCreator = this.participantRepository.findEnabledUserByEmail(creatorEmail).orElseThrow(
                 () -> new EntityNotFoundException("User with email " + creatorEmail + " not found.")
         );
 
-        EventEntity eventEntity = this.eventRepository.findEventByIdAndEventCreator(participant.getId(), eventId)
+        EventEntity eventEntity = this.eventRepository.findEventByIdAndEventCreator(eventCreator.getId(), eventId)
                 .orElseThrow(
                         () -> new EntityNotFoundException("event not found")
                 );
@@ -751,8 +757,19 @@ public class EventServiceImp implements EventService {
                 .build();
 
         eventEntity.getEventParticipants().forEach(ep -> {
-            if(!ep.isEventCreator()) {
+            if(! ep.isEventCreator()) {
                 participantNotification.setParticipantEventCreated(ep.isEventCreator());
+
+                this.eventInscriptionRepository
+                        .findByParticipantIdAndEvent(ep.getParticipant().getId(), ep.getEvent().getId())
+                        .ifPresent(
+                                (inscription) -> {
+                                    this.mpPaymentService.refundPayment(
+                                            inscription.getPayment().getPaymentId(),
+                                            eventCreator.getMpAuthToken().getAccessToken()
+                                    );
+                                }
+                        );
 
                 this.participantNotificationService.sendNotification(participantNotification,
                         ep.getParticipant().getId());

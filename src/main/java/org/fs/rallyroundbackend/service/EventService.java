@@ -14,7 +14,7 @@ import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackRequest;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackResponse;
 import org.fs.rallyroundbackend.dto.event.feedback.EventFeedbackStatistics;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
-import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 import org.fs.rallyroundbackend.exception.event.EventFeedbackAlreadyProvidedException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
 import org.springframework.security.access.AccessDeniedException;

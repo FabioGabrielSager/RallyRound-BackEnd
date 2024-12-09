@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.entity.users.participant;
+package org.fs.rallyroundbackend.entity.mercadopago;
 
 public enum MPPaymentStatus {
     pending,

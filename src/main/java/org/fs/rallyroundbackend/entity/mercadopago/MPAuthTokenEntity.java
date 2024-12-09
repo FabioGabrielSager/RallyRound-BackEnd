@@ -1,4 +1,4 @@
-package org.fs.rallyroundbackend.entity.users.participant;
+package org.fs.rallyroundbackend.entity.mercadopago;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 
 import java.util.UUID;
 

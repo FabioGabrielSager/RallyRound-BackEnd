@@ -10,6 +10,7 @@ import org.fs.rallyroundbackend.entity.chats.ChatMessageEntity;
 import org.fs.rallyroundbackend.entity.chats.PrivateChatEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPAuthTokenEntity;
 import org.fs.rallyroundbackend.entity.users.UserEntity;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
@@ -47,7 +48,7 @@ public class ParticipantEntity extends UserEntity {
     @Cascade({CascadeType.PERSIST, CascadeType.MERGE})
     private List<ReportEntity> reports;
 
-    @Column(name = "profile_photo", columnDefinition = "bytea")
+    @Column(name = "profile_photo")
     private byte[] profilePhoto;
 
     @OneToMany(mappedBy = "participant")

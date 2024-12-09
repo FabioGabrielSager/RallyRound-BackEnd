@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mercadopago.resources.payment.Payment;
 import org.fs.rallyroundbackend.dto.auth.ParticipantFavoriteActivityDto;
 import org.fs.rallyroundbackend.dto.event.EventParticipantDto;
 import org.fs.rallyroundbackend.dto.location.addresses.AddressDto;
@@ -14,7 +15,9 @@ import org.fs.rallyroundbackend.entity.events.EventSchedulesEntity;
 import org.fs.rallyroundbackend.entity.location.AddressEntity;
 import org.fs.rallyroundbackend.entity.location.EntityType;
 import org.fs.rallyroundbackend.entity.location.PlaceEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentEntity;
 import org.fs.rallyroundbackend.entity.users.DepartmentEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantFavoriteActivityEntity;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Conditions;
@@ -149,6 +152,22 @@ public class MappersConfig {
             @Override
             protected String convert(DepartmentEntity source) {
                 return source.getName();
+            }
+        });
+
+        modelMapper.addConverter(new AbstractConverter<Payment, MPPaymentEntity>() {
+            @Override
+            protected MPPaymentEntity convert(Payment source) {
+                return MPPaymentEntity.builder()
+                        .amount(source.getTransactionAmount())
+                        .updatedAt(source.getDateLastUpdated())
+                        .createdAt(source.getDateCreated())
+                        .approvedAt(source.getDateApproved())
+                        .moneyReleaseAt(source.getMoneyReleaseDate())
+                        .currencyId(source.getCurrencyId())
+                        .status(MPPaymentStatus.valueOf(source.getStatus()))
+                        .paymentId(source.getId())
+                        .build();
             }
         });
 

@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.service;
 
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.payment.PaymentRefund;
 import org.fs.rallyroundbackend.dto.mercadopago.MpWebHookNotificationDto;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 
@@ -27,4 +28,6 @@ public interface MPPaymentService {
      * @param notification The notification DTO received from Mercado Pago webhook.
      */
     void processEventInscriptionPaymentNotification(MpWebHookNotificationDto notification);
+
+    PaymentRefund refundPayment(Long paymentId, String accessToken);
 }

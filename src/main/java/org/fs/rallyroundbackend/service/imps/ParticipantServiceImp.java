@@ -407,7 +407,16 @@ public class ParticipantServiceImp implements ParticipantService {
 
         return SearchedParticipantResult
                 .builder()
-                .matches(List.of(this.modelMapper.map(matchesPage, ParticipantSummary[].class)))
+                .matches(matchesPage.stream()
+                    .map(
+                        (participant) -> new ParticipantSummary(
+                                participant.getId(),
+                                participant.getName(),
+                                participant.getProfilePhoto()
+                        )
+                    )
+                    .toList()
+                )
                 .totalMatches(totalMatchesCount)
                 .limit(limit == null ? 5 : limit)
                 .page(page == null ? 0 : page)

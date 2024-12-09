@@ -2,6 +2,7 @@ package org.fs.rallyroundbackend.service.imps;
 
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentRefundClient;
 import com.mercadopago.client.preference.PreferenceClient;
 import com.mercadopago.client.preference.PreferenceItemRequest;
 import com.mercadopago.client.preference.PreferencePayerRequest;
@@ -11,6 +12,7 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.payment.PaymentItem;
+import com.mercadopago.resources.payment.PaymentRefund;
 import com.mercadopago.resources.preference.Preference;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +21,11 @@ import org.fs.rallyroundbackend.dto.mercadopago.MpWebHookNotificationDto;
 import org.fs.rallyroundbackend.dto.participant.ParticipantNotificationDto;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
 import org.fs.rallyroundbackend.entity.events.EventParticipantEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionEntity;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
-import org.fs.rallyroundbackend.entity.users.participant.MPAuthTokenEntity;
-import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.entity.mercadopago.MPAuthTokenEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantNotificationType;
 import org.fs.rallyroundbackend.exception.event.MissingEventCreatorException;
@@ -32,10 +35,11 @@ import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.MPPaymentService;
 import org.fs.rallyroundbackend.service.ParticipantNotificationService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +55,7 @@ public class MPPaymentServiceImp implements MPPaymentService {
     private final MPAuthTokenRepository mpAuthTokenRepository;
     private final EventInscriptionRepository eventInscriptionRepository;
     private final ParticipantNotificationService participantNotificationService;
+    private final ModelMapper modelMapper;
 
     @Override
     public String createPreferenceForAnEventInscription(EventInscriptionEntity inscriptionEntity, String userEmail)
@@ -144,7 +149,7 @@ public class MPPaymentServiceImp implements MPPaymentService {
                                     "Event inscription doesn't found.");
                         });
 
-        eventInscriptionEntity.setPaymentStatus(MPPaymentStatus.valueOf(payment.getStatus()));
+        eventInscriptionEntity.setPayment(this.modelMapper.map(payment, MPPaymentEntity.class));
         
         MPPaymentStatus mpPaymentStatus = MPPaymentStatus.valueOf(payment.getStatus());
 
@@ -162,10 +167,13 @@ public class MPPaymentServiceImp implements MPPaymentService {
                 eventInscriptionEntity
                         .setStatus(EventInscriptionStatus.INCOMPLETE_MISSING_HOUR_VOTE);
 
-                participantNotification.setMessage(String.format("Pago de inscripción a evento de %s " +
-                                "organizado para el día %s recibido con éxito. Ya puede completar la inscripción.",
-                        eventInscriptionEntity.getEvent().getActivity().getName(),
-                        eventInscriptionEntity.getEvent().getDate()));
+                participantNotification.setMessage(String.format(
+                    "Pago de inscripción a evento de %s organizado para el día %s recibido con éxito. " +
+                            "Ya puede completar la inscripción.",
+                    eventInscriptionEntity.getEvent().getActivity().getName(),
+                    eventInscriptionEntity.getEvent().getDate()
+                    )
+                );
             }
         } else if (mpPaymentStatus.equals(MPPaymentStatus.cancelled)
                 || mpPaymentStatus.equals(MPPaymentStatus.rejected)
@@ -184,5 +192,25 @@ public class MPPaymentServiceImp implements MPPaymentService {
                 eventInscriptionEntity.getParticipant().getId());
 
         this.eventInscriptionRepository.save(eventInscriptionEntity);
+    }
+
+    @Override
+    public PaymentRefund refundPayment(Long paymentId, String accessToken) {
+        PaymentRefundClient paymentRefundClient = new PaymentRefundClient();
+
+        try {
+            return paymentRefundClient.refund(
+                    paymentId,
+                    MPRequestOptions
+                        .builder()
+                        .accessToken(accessToken)
+                        .build()
+            );
+        } catch (MPException e) {
+            // TODO: Implements user exceptions
+            throw new RuntimeException(e);
+        } catch (MPApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

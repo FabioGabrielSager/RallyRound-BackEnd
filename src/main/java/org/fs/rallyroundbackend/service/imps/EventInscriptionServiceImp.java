@@ -19,6 +19,7 @@ import org.fs.rallyroundbackend.exception.event.inscriptions.EventInscriptionAlr
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventInscriptionStateChangeException;
 import org.fs.rallyroundbackend.exception.event.InvalidSelectedHourException;
 import org.fs.rallyroundbackend.exception.event.inscriptions.EventStateException;
+import org.fs.rallyroundbackend.repository.event.EventInscriptionRepository;
 import org.fs.rallyroundbackend.repository.event.EventRepository;
 import org.fs.rallyroundbackend.repository.user.participant.ParticipantRepository;
 import org.fs.rallyroundbackend.service.EventInscriptionService;
@@ -45,6 +46,7 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
     private final ParticipantRepository participantRepository;
     private final MPPaymentService mpPaymentService;
     private final ParticipantNotificationService participantNotificationService;
+    private final EventInscriptionRepository eventInscriptionRepository;
 
     @Override
     @Transactional
@@ -228,11 +230,11 @@ public class EventInscriptionServiceImp implements EventInscriptionService {
         ParticipantEntity joiningParticipant = this.participantRepository.findEnabledUserByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
 
-        Optional<EventInscriptionEntity> eventInscriptionOptional = joiningParticipant.getEventInscriptions()
-                .stream().filter(ei -> ei.getEvent().getId().equals(eventId) &&
-                        ei.getStatus().equals(EventInscriptionStatus.ACCEPTED)).findFirst();
+        Optional<EventInscriptionEntity> eventInscriptionOptional = this.eventInscriptionRepository
+                .findByParticipantIdAndEvent(joiningParticipant.getId(), eventId);
 
-        if (eventInscriptionOptional.isEmpty()) {
+        if (eventInscriptionOptional.isEmpty()
+                || eventInscriptionOptional.get().getStatus() == EventInscriptionStatus.ACCEPTED) {
             throw new EntityNotFoundException("Event inscription doesn't founded.");
         }
 

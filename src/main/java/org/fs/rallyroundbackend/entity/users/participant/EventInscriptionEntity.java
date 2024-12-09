@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.fs.rallyroundbackend.entity.events.EventEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,10 +23,10 @@ public class EventInscriptionEntity {
     @Id
     private UUID id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private EventEntity event;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private ParticipantEntity participant;
 
     @Column(name = "payment_link")
@@ -33,9 +35,8 @@ public class EventInscriptionEntity {
     @Enumerated(EnumType.STRING)
     private EventInscriptionStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status")
-    private MPPaymentStatus paymentStatus;
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    private MPPaymentEntity payment;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

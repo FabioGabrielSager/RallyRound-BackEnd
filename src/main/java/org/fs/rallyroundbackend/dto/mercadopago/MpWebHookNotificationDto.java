@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentEntity;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,5 +24,5 @@ public class MpWebHookNotificationDto {
     @JsonProperty("api_version")
     private String apiVersion;
     private String action;
-    private MPWebHookNotificationDataDto data;
+    private MPPaymentEntity data;
 }

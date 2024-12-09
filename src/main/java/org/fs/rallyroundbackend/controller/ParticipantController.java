@@ -15,7 +15,7 @@ import org.fs.rallyroundbackend.dto.event.inscription.EventInscriptionResultDto;
 import org.fs.rallyroundbackend.dto.event.inscription.EventsInscriptionTrendByMonthAndYear;
 import org.fs.rallyroundbackend.dto.participant.*;
 import org.fs.rallyroundbackend.entity.users.participant.EventInscriptionStatus;
-import org.fs.rallyroundbackend.entity.users.participant.MPPaymentStatus;
+import org.fs.rallyroundbackend.entity.mercadopago.MPPaymentStatus;
 import org.fs.rallyroundbackend.exception.auth.IncorrectPasswordException;
 import org.fs.rallyroundbackend.exception.report.ReportsLimitException;
 import org.fs.rallyroundbackend.service.EventInscriptionService;

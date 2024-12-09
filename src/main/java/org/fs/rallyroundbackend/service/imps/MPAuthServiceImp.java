@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.Setter;
 import org.fs.rallyroundbackend.client.mercadopago.MPClient;
 import org.fs.rallyroundbackend.dto.mercadopago.AccessTokenDto;
-import org.fs.rallyroundbackend.entity.users.participant.MPAuthTokenEntity;
+import org.fs.rallyroundbackend.entity.mercadopago.MPAuthTokenEntity;
 import org.fs.rallyroundbackend.entity.users.participant.ParticipantEntity;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccessTokenRequestException;
 import org.fs.rallyroundbackend.exception.mercadopago.MPAccountAlreadyLinkedException;
